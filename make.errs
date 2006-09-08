@@ -1,0 +1,6 @@
+g++ -o solit main.o lowres_renderer.o  `sdl-config --libs`
+lowres_renderer.o: In function `Renderer::Renderer[not-in-charge]()':
+lowres_renderer.o(.gnu.linkonce.t._ZN8RendererC2Ev+0xc9): undefined reference to `Deck::Deck[in-charge]()'
+collect2: ld returned 1 exit status
+make: *** [solit] Error 1
+
