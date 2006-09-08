@@ -152,8 +152,33 @@ ReleaseButton(const Point &p)
 }
 
 void Game::
-DoubleClick(const Point &)
-{}
+DoubleClick(const Point &p)
+{
+    Stackable *o = NULL;
+
+    int pos = rend_->GetPosition(p);
+
+    if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow)
+        o = &(rows_[pos - Renderer::FirstRow]);
+    else if (pos == Renderer::CardPos) 
+        o = &cards_;
+
+    if (!o || o->Empty())
+        return;
+    
+    for (int i = 0; i < 8; i++) {
+        if (seeds_[i].CanGet(o->Get())) {
+            seeds_[i].Add(o->Get());
+            o->Remove();
+
+            rend_->Draw(seeds_[i], Renderer::FirstSeedPos + i);
+
+            rend_->Update();
+
+            return;
+        }
+    }
+}
 
 
 void Game::Update()

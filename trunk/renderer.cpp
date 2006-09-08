@@ -74,7 +74,10 @@ Draw(const Row &r, int pos)
         
         cr->Draw(*it, p);
 
-        p.Y( p.Y() + card_size_.Y() / 3);
+        if (it->Covered())
+           p.Y( p.Y() + card_size_.Y() / 4);
+        else
+           p.Y( p.Y() + card_size_.Y() / 3);
     }
 }
 

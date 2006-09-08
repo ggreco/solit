@@ -45,6 +45,8 @@ Update()
 bool LowresRenderer::
 Wait()
 {
+    static Uint32 lastclick = 0L;
+
     for(;;) {
         SDL_Event e;
 
@@ -61,6 +63,14 @@ Wait()
                     break;                    
                 case SDL_MOUSEBUTTONUP:
                     Renderer::ReleaseButton(Point(e.button.x, e.button.y));
+
+                    if ((SDL_GetTicks() - lastclick) < 300) {
+                        Renderer::DoubleClick(Point(e.button.x, e.button.y));
+                        lastclick = 0;
+                    }
+                    else
+                        lastclick = SDL_GetTicks();
+
                     break;
             }
         }
