@@ -1,13 +1,30 @@
 #include "lowres_renderer.h"
+#include <iostream>
 
-int main()
+#ifndef WINCE
+int main(int argc, char *argv[])
+#else
+extern "C" {
+int SDL_main(int argc, char *argv[]);
+}
+
+int SDL_main(int argc, char *argv[])
+#endif
 {
-    Renderer *r = new LowresRenderer();
+	try {
+	    Renderer *r = new LowresRenderer();
+	    Game game(r);
 
-    Game game(r);
+		r->Update();
+		r->Wait();
+	}
+	catch (std::string &error) {
+		std::cerr << "Error: " << error << std::endl;
+	}
+	catch (...) {
+		std::cerr << "Unhandled exception!\n";
+	}
 
-    r->Update();
-    r->Wait();
 
     return 0;
 }

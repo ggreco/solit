@@ -38,6 +38,7 @@ class LowresCardRenderer : public CardRenderer
         void Refresh(const Card &);
         void Optimize();
         void Clear(const Card &);
+		void ClearBuffers() { card_datas_.clear(); }
 };
 
 class LowresRenderer : public Renderer
@@ -61,6 +62,7 @@ class LowresRenderer : public Renderer
         friend class LowresCardRenderer;
 
     public:
+		void Clear();
         void AddDirtyRect(const SDL_Rect &r) { if (r.x < screen_->w && r.y < screen_->h) rects_.push_back(r); }
         void UpdateAll();
         void Update();

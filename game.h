@@ -39,8 +39,11 @@ class Game : public ActionManager
     void PressButton(const Point &);
     void ReleaseButton(const Point &);
     void DoubleClick(const Point &);
+	void KeyPress(char key) {}
+	void KeyRelease(char key);
 
 public:
+	void Restart();
     void Update();
     Game(Renderer *);
     ~Game() {};

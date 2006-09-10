@@ -1,9 +1,18 @@
 #include "deck.h"
+#include <algorithm>
 
 Deck::
 Deck()
 {
-    for (int j = 0; j < 2; j++) {
+	init();
+}
+
+void
+Deck::init()
+{
+	cards_.clear();
+
+	for (int j = 0; j < 2; j++) {
         for (int i = 1; i < 14; i++) {
             Card c1(i, Hearts, j);
             Card c2(i, Squares, j);
@@ -18,35 +27,7 @@ Deck()
 void Deck::
 Deal()
 {
-    int s = cards_.size();
-    Card *temp[s];
-    Cards new_;
-    int counter  = 0;
+	std::random_shuffle(cards_.begin(), cards_.end());
 
-    for (int i = 0; i < s; ++i)
-        temp[i] = NULL;
-
-    for (CardIterator it = cards_.begin(); 
-            it != cards_.end(); ++it) {
-        int pos = random() % s;
-
-        if (counter < (s/2)) {
-            while (temp[pos])
-                pos = random() % s;
-        }
-        else {
-            pos = 0;
-
-            while (temp[pos])
-                pos++;
-        }
-
-        temp[pos] = &(*it);
-        counter++;
-    }
-
-    for (int i = 0; i < s; ++i)
-        new_.push_back(*temp[i]);
-
-    cards_ = new_;
+	std::random_shuffle(cards_.begin(), cards_.end());
 }

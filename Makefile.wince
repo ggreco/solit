@@ -1,0 +1,13 @@
+OBJS = main.o lowres_renderer.o deck.o game.o renderer.o card.o
+
+CC=arm-wince-pe-gcc
+CXX=arm-wince-pe-gcc
+
+CXXFLAGS = -DWINCE -I/usr/local/arm-wince-pe/include/SDL
+TARGET = solit.exe
+
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ /usr/local/arm-wince-pe/lib/libSDLmain.a $(OBJS) -target=win -L/usr/local/SDL-1.2.6 -lSDL /usr/local/arm-wince-pe/lib/aygshell.lib   
+
+clean:
+	rm -f *.o

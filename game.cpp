@@ -1,15 +1,37 @@
 #include "game.h"
 #include "renderer.h"
 #include <iostream>
+#include <time.h>
 
 Game::Game(Renderer *r) :
     rend_(r)
 {
     srand(time(NULL));
     r->SetActionManager(this);
+
     deck_.Deal();
 
-    Update();
+	Update();
+
+}
+
+void Game::
+Restart()
+{
+	cards_.Clear();
+	for (int i = 0; i < 8; i++)
+		seeds_[i].Clear();
+
+	for (int j = 0; j < COLUMNS; j++)
+		rows_[j].Clear();
+
+	rend_->Clear();
+
+	deck_.init();
+    deck_.Deal();
+
+	Update();
+	rend_->UpdateAll();
 }
 
 void Game::
@@ -30,6 +52,19 @@ MouseMove(const Point &p)
 }
 
 void Game::
+KeyRelease(char key)
+{
+	switch(key) {
+		case 'q':
+			exit(0);
+			break;
+		case 'n':
+			Restart();
+			break;
+	}
+}
+
+void Game::
 PressButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
@@ -41,7 +76,10 @@ PressButton(const Point &p)
         if (!rows_[pos - Renderer::FirstRow].Empty() && !rows_[pos - Renderer::FirstRow].Get().Covered()) {
             std::pair<int, int> rowinfo = rend_->GetRowInfo();
             Row &r = rows_[pos - Renderer::FirstRow];
-            int toget = r.Size() - (p.Y() - rowinfo.first) / rowinfo.second;
+			int covered = r.HowManyCovered();
+            int toget = (r.Size() - covered);
+
+			toget -= (p.Y() - rowinfo.first - covered * rowinfo.second/4) / (rowinfo.second/3);
 
             if (toget <= 0)
                 toget = 1;
@@ -99,6 +137,15 @@ ReleaseButton(const Point &p)
             seeds_[pos - Renderer::FirstSeedPos].Add(selection_.Get());
             selection_.Remove();
             rend_->Draw(seeds_[pos - Renderer::FirstSeedPos], pos);
+
+			int total = 0;
+
+			for (int i = 0; i < 8; ++i)
+				total += seeds_[i].Size();
+
+			if (total == (13 * 8)) {
+				// handle victory condition!
+			}
         }
         else if (pos >= Renderer::FirstRow && 
                  pos <= Renderer::LastRow &&
@@ -199,6 +246,6 @@ void Game::Update()
     rend_->Draw(deck_, Renderer::DeckPos);
     rend_->Draw(cards_, Renderer::CardPos);
 
-    for (int i = 0; i < 8; ++i)
-        rend_->Draw(seeds_[i], Renderer::FirstSeedPos + i);
+    for (int k = 0; k < 8; ++k)
+        rend_->Draw(seeds_[k], Renderer::FirstSeedPos + k);
 }
