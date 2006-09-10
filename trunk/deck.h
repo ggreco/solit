@@ -9,6 +9,7 @@ class Deck : public Stackable
 {
     public:
         Deck();
+		void init();
         void Deal();
         Card GetCard() { Card c = Get(); Remove(); return c; }
 };

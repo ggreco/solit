@@ -3,6 +3,19 @@
 #include <iostream>
 
 void LowresRenderer::
+Clear()
+{
+	card_rend_.ClearBuffers();
+
+    SDL_FillRect(screen_, NULL, background_);
+
+	for (int i = 0; i < 8; i++)
+        DrawRect(seed_positions_[i], card_size_, white_);
+
+    UpdateAll();
+}
+
+void LowresRenderer::
 DrawRect(const Point &pos, const Point &size, Uint32 color)
 {
     SDL_Rect r = { pos.X(), pos.Y(), size.X(), size.Y() };
@@ -55,6 +68,12 @@ Wait()
                 case SDL_QUIT:
                     return false;
                     break;
+				case SDL_KEYDOWN:
+					Renderer::KeyPress(e.key.keysym.sym);
+					break;
+				case SDL_KEYUP:
+					Renderer::KeyRelease(e.key.keysym.sym);
+					break;
                 case SDL_MOUSEMOTION:
                     Renderer::MouseMove(Point(e.motion.x, e.motion.y));
                     break;
@@ -77,6 +96,12 @@ Wait()
     }
 }
 
+#ifdef WINCE
+#define OPENFLAGS (SDL_SWSURFACE|SDL_FULLSCREEN)
+#else
+#define OPENFLAGS SDL_SWSURFACE
+#endif
+
 LowresRenderer::
 LowresRenderer() :
     card_rend_(".", *this)
@@ -88,7 +113,8 @@ LowresRenderer() :
 
     screen_size_ = Point(320, 240);
 
-    if (!(screen_ = SDL_SetVideoMode(screen_size_.X(), screen_size_.Y(), 16, SDL_SWSURFACE)))
+    if (!(screen_ = SDL_SetVideoMode(screen_size_.X(), screen_size_.Y(), 
+				16, OPENFLAGS)))
         throw std::string("Unable to open display.");
 
     background_ =  SDL_MapRGB(screen_->format,
@@ -97,10 +123,6 @@ LowresRenderer() :
                         255, 255, 255);
     black_ = SDL_MapRGB(screen_->format,
                         0, 0, 0);
-
-    SDL_FillRect(screen_, NULL, background_);
-
-    UpdateAll();
 
     SDL_Rect r = { 0, 0, 320, 240};
     SDL_SetClipRect(screen_, &r);
@@ -113,20 +135,21 @@ LowresRenderer() :
 
     card_rend_.Optimize();
 
-    for (int i = 0; i < 8; i++) {
+	int i;
+
+    for (i = 0; i < 8; i++) {
         seed_positions_[i] = Point(cards_position_.X() + 2 + 
                                    (i + 2) * (card_size_.X() + 2),
                                    deck_position_.Y());
-
-        DrawRect(seed_positions_[i], card_size_, white_);
     }
 
-    for (int i = 0; i < COLUMNS; i++) {
+    for (i = 0; i < COLUMNS; i++) {
         column_positions_[i] = Point(1 + 
                                    i * (card_size_.X() + 2),
                                    deck_position_.Y() + 4 + card_size_.Y());
     }
 
+	Clear();
 }
 
 LowresCardRenderer::

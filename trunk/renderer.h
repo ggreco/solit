@@ -40,7 +40,9 @@ class Renderer
     public:
         enum {DeckPos = 0 , CardPos = 1, FirstSeedPos = 2, LastSeedPos = 9, FirstRow = 10, LastRow = 9 + COLUMNS};
         virtual bool Wait() = 0;
-        virtual void Update() = 0;
+		virtual void Update() = 0;
+        virtual void UpdateAll() = 0;
+		virtual void Clear() = 0;
         void Draw(const Row &, int pos);
         void Draw(const Stackable &, int pos);
         void Draw(const Card &c, const Point &p) { GetCardRenderer()->Draw(c, p); }
@@ -54,8 +56,10 @@ class Renderer
         void PressButton(const Point &p) { if (action_) action_->PressButton(p); }
         void ReleaseButton(const Point &p) { if (action_) action_->ReleaseButton(p); }
         void DoubleClick(const Point &p) { if (action_) action_->DoubleClick(p); }
+		void KeyPress(const char key) { if (action_) action_->KeyPress(key); }
+		void KeyRelease(char key) { if (action_) action_->KeyRelease(key); }
         int GetPosition(const Point &p);
-        std::pair<int,int> GetRowInfo() { return std::make_pair(column_positions_[0].Y(), card_size_.Y()/3 ); }
+        std::pair<int,int> GetRowInfo() { return std::make_pair(column_positions_[0].Y(), card_size_.Y() ); }
         virtual ~Renderer() {};
 
     protected:
@@ -66,6 +70,13 @@ class Renderer
         Point column_positions_[COLUMNS];
         Point screen_size_;
     private:
+		bool inside(const Point &p, const Point &orig, const Point &size)
+		{
+			return (p.X() >= (orig.X() - card_size_.X()/3) && 
+				    p.Y() >= (orig.Y() - card_size_.Y()/3) &&
+			        p.X() <= (orig.X() + size.X() - card_size_.X()/3) &&
+				    p.Y() <= (orig.Y() + size.Y()));
+		}
         ActionManager *action_;
 };
 

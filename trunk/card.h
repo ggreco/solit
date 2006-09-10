@@ -20,7 +20,7 @@ public:
     int Value() const { return value_; }
     SeedValue Seed() const { return seed_; }
     bool Covered() const { return covered_; }
-    void Covered(int val) { covered_ = val; }
+    void Covered(bool val) { covered_ = val; }
     void Deck(int d) { deck_ = d; }
     bool operator< (const Card &c) const { return (c.deck_ > deck_ ||
                                        (c.deck_ == deck_ && c.seed_ > seed_) ||

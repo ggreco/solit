@@ -34,14 +34,6 @@ Draw(const Stackable &obj, int pos)
     }
 }
 
-inline bool inside(const Point &p, const Point &orig, const Point &size)
-{
-    return (p.X() >= (orig.X() - 1) && 
-            p.Y() >= orig.Y() &&
-            p.X() <= (orig.X() + size.X()) &&
-            p.Y() <= (orig.Y() + size.Y()));
-}
-
 int Renderer::
 GetPosition(const Point &p)
 {
@@ -50,11 +42,13 @@ GetPosition(const Point &p)
     else if (inside(p, cards_position_, card_size_))
         return CardPos;
     else { 
-        for (int i = 0; i < 8; ++i)
+		int i;
+
+        for (i = 0; i < 8; ++i)
             if (inside(p, seed_positions_[i], card_size_))
                 return FirstSeedPos + i;
 
-        for (int i = 0; i < COLUMNS; ++i) {
+        for (i = 0; i < COLUMNS; ++i) {
             if (inside(p, column_positions_[i], Point(card_size_.X(), screen_size_.Y())))
                 return FirstRow + i;
         }

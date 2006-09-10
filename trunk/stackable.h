@@ -15,6 +15,7 @@ protected:
     Cards cards_;
 public:
     int Size() const { return cards_.size(); }
+	void Clear() { cards_.clear(); }
     bool Empty() const { return cards_.empty(); }
     Cards &GetCards() { return cards_; }
     const Cards &GetCards() const { return cards_; }

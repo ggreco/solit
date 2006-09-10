@@ -11,6 +11,8 @@ public:
     virtual void PressButton(const Point &) = 0;
     virtual void ReleaseButton(const Point &) = 0;
     virtual void DoubleClick(const Point &) = 0;   
+    virtual void KeyPress(char) = 0;   
+	virtual void KeyRelease(char) = 0;   
 };
 
 #endif
