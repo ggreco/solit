@@ -74,7 +74,7 @@ class Renderer
 		{
 			return (p.X() >= (orig.X() - card_size_.X()/3) && 
 				    p.Y() >= (orig.Y() - card_size_.Y()/3) &&
-			        p.X() <= (orig.X() + size.X() - card_size_.X()/3) &&
+			        p.X() <= (orig.X() + size.X() - card_size_.X()/4) &&
 				    p.Y() <= (orig.Y() + size.Y()));
 		}
         ActionManager *action_;
