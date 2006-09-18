@@ -19,7 +19,7 @@ void Game::
 Restart()
 {
 	cards_.Clear();
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < TOTAL_SEEDS; i++)
 		seeds_[i].Clear();
 
 	for (int j = 0; j < COLUMNS; j++)
@@ -140,10 +140,10 @@ ReleaseButton(const Point &p)
 
 			int total = 0;
 
-			for (int i = 0; i < 8; ++i)
+			for (int i = 0; i < TOTAL_SEEDS; ++i)
 				total += seeds_[i].Size();
 
-			if (total == (13 * 8)) {
+			if (total == (13 * TOTAL_SEEDS)) {
 				// handle victory condition!
 			}
         }
@@ -213,7 +213,7 @@ DoubleClick(const Point &p)
     if (!o || o->Empty())
         return;
     
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < TOTAL_SEEDS; i++) {
         if (seeds_[i].CanGet(o->Get())) {
             seeds_[i].Add(o->Get());
             o->Remove();
@@ -246,6 +246,6 @@ void Game::Update()
     rend_->Draw(deck_, Renderer::DeckPos);
     rend_->Draw(cards_, Renderer::CardPos);
 
-    for (int k = 0; k < 8; ++k)
+    for (int k = 0; k < TOTAL_SEEDS; ++k)
         rend_->Draw(seeds_[k], Renderer::FirstSeedPos + k);
 }

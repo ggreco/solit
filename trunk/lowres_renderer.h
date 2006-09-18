@@ -8,7 +8,17 @@
 #include <map>
 #include <vector>
 
-class LowresRenderer;
+struct ResInfo
+{
+    int screen_width, screen_height;
+    int card_width, card_height;
+    int spacing_x, spacing_y;
+    int symbol_width, symbol_height;
+    const char *cards_file;
+    const char *back_file;
+};
+
+class SdlRenderer;
 
 class CardData
 {
@@ -24,14 +34,15 @@ public:
     void Pos(const Point &p) { pos_ = p; }
 };
 
-class LowresCardRenderer : public CardRenderer
+class SdlCardRenderer : public CardRenderer
 {
     private:
         SDL_Surface *source_, *back_;
-        LowresRenderer &rend_;
+        SdlRenderer &rend_;
         std::map<Card,CardData> card_datas_;
+        int sw_, sh_;
     public:
-        LowresCardRenderer(const std::string &path, LowresRenderer &rend);
+        SdlCardRenderer(const std::string &path, SdlRenderer &rend);
 
         void Draw(const Card &, const Point &);
         void Move(const Card &, const Point &) {}
@@ -41,12 +52,13 @@ class LowresCardRenderer : public CardRenderer
 		void ClearBuffers() { card_datas_.clear(); }
 };
 
-class LowresRenderer : public Renderer
+class SdlRenderer : public Renderer
 {
     private:
+        ResInfo &res_;
         SDL_Surface *screen_;
         Uint32 white_, black_, background_;
-        LowresCardRenderer card_rend_;
+        SdlCardRenderer card_rend_;
         std::vector<SDL_Rect> rects_;
 
         SDL_Surface * MakeDirty() {
@@ -59,7 +71,7 @@ class LowresRenderer : public Renderer
 
         void DrawRect(const Point &pos, const Point &size, Uint32 color);
         void DrawEmpty(const Point &pos) { DrawRect(pos, card_size_, background_); }
-        friend class LowresCardRenderer;
+        friend class SdlCardRenderer;
 
     public:
 		void Clear();
@@ -67,8 +79,8 @@ class LowresRenderer : public Renderer
         void UpdateAll();
         void Update();
         bool Wait();
-        LowresRenderer();
-        ~LowresRenderer() {};
+        SdlRenderer(int);
+        ~SdlRenderer() {};
         CardRenderer *GetCardRenderer() { return &card_rend_; }
 };
 
