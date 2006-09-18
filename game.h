@@ -3,6 +3,8 @@
 #define GAME_H
 
 #define COLUMNS 12
+#define TOTAL_DECKS 2
+#define TOTAL_SEEDS (TOTAL_DECKS * 4)
 
 #include "deck.h"
 #include "row.h"
@@ -32,7 +34,7 @@ class Game : public ActionManager
     Deck deck_;
     Stackable cards_;
     Row  rows_[COLUMNS];
-    Seed seeds_[8];
+    Seed seeds_[TOTAL_DECKS * 4];
     Selection selection_;
 
     void MouseMove(const Point &);
