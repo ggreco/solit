@@ -34,6 +34,26 @@ Draw(const Stackable &obj, int pos)
     }
 }
 
+void Renderer::
+Move(const Card &c, int pos)
+{
+    CardRenderer *cr = GetCardRenderer();
+
+    if (pos >= FirstSeedPos && pos <= LastSeedPos) {
+        cr->Move(c, seed_positions_[pos - FirstSeedPos]);
+    }
+    else switch(pos) {
+        case DeckPos:
+            cr->Move(c, deck_position_);
+            break;
+        case CardPos:
+            cr->Move(c, cards_position_);
+            break;
+        default:
+            std::cerr << "non so come disegnare in questa posizione:" << pos << "\n";
+            break;
+    }
+}
 int Renderer::
 GetPosition(const Point &p)
 {

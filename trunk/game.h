@@ -34,7 +34,7 @@ class Game : public ActionManager
     Deck deck_;
     Stackable cards_;
     Row  rows_[COLUMNS];
-    Seed seeds_[TOTAL_DECKS * 4];
+    Seed seeds_[TOTAL_SEEDS];
     Selection selection_;
 
     void MouseMove(const Point &);
@@ -43,6 +43,9 @@ class Game : public ActionManager
     void DoubleClick(const Point &);
 	void KeyPress(char key) {}
 	void KeyRelease(char key);
+	void AutoComplete();
+	void Victory();
+	bool SeedsFull();
 
 public:
 	void Restart();

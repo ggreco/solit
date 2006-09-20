@@ -1,6 +1,7 @@
 #include "lowres_renderer.h"
 #include <string>
 #include <iostream>
+#include <math.h>
 
 ResInfo res[] = {
     {320, 240, 20, 30, 2, 2, 8, 8, "/low_seeds.bmp", "/low_back.bmp"},
@@ -227,6 +228,35 @@ Clear(const Card &card)
 
         card_datas_.erase(it);
     }
+}
+
+void SdlCardRenderer::
+Move(const Card &card, const Point &pos)
+{
+    std::map<Card,CardData>::iterator it;
+	Point delta, start;
+
+    if ((it = card_datas_.find(card)) != card_datas_.end()) {
+		start = it->second.Pos();
+
+		delta = pos - start;
+
+		double steps = sqrt(delta.X() * delta.X() + delta.Y() * delta.Y());
+
+		for (int i = 0; i < (int)steps; ++i) {
+			start.X(start.X() + (int)((double)delta.X() / steps));
+			start.Y(start.Y() + (int)((double)delta.Y() / steps));
+
+			Draw(card,  start);
+
+			rend_.Update();
+
+			SDL_Delay(10);
+		}
+	}
+
+
+	Draw(card, pos);
 }
 
 void SdlCardRenderer::
