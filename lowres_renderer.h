@@ -45,7 +45,7 @@ class SdlCardRenderer : public CardRenderer
         SdlCardRenderer(const std::string &path, SdlRenderer &rend);
 
         void Draw(const Card &, const Point &);
-        void Move(const Card &, const Point &) {}
+        void Move(const Card &, const Point &);
         void Refresh(const Card &);
         void Optimize();
         void Clear(const Card &);

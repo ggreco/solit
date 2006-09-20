@@ -51,10 +51,65 @@ MouseMove(const Point &p)
     }
 }
 
+bool Game::
+SeedsFull()
+{
+	int total = 0;
+
+	for (int i = 0; i < TOTAL_SEEDS; ++i)
+		total += seeds_[i].Size();
+
+	return (total == (13 * TOTAL_SEEDS));
+}
+
+void Game::Victory()
+{
+	rend_->Clear();
+
+	//  XXX implementare animazione vittoria.
+}
+
+void Game::AutoComplete()
+{
+	while (!SeedsFull()) {
+		for (int i = 0; i < COLUMNS; ++i) {
+			if (!rows_[i].Size())
+				continue;
+
+			for (int j = 0; j < TOTAL_SEEDS; ++j) {
+				if (seeds_[j].CanGet(rows_[i].Get())) {
+
+					rend_->Move(rows_[i].Get(), Renderer::FirstSeedPos + j);
+
+					seeds_[j].Add(rows_[i].GetCard());
+
+					rend_->Draw(seeds_[j], Renderer::FirstSeedPos + j);
+
+					rend_->Update();
+				}
+			}
+		}
+	}
+
+	Victory();
+}
+
 void Game::
 KeyRelease(char key)
 {
 	switch(key) {
+		case 'a':
+			if (deck_.Size() == 0 &&
+				cards_.Size() == 0) {
+				for (int i = 0; i < COLUMNS; ++i)
+					if (rows_[i].Size() &&
+						rows_[i].First().Covered())
+						return;	
+					
+				AutoComplete();
+			}
+
+			break;
 		case 'q':
 			exit(0);
 			break;
@@ -138,13 +193,10 @@ ReleaseButton(const Point &p)
             selection_.Remove();
             rend_->Draw(seeds_[pos - Renderer::FirstSeedPos], pos);
 
-			int total = 0;
-
-			for (int i = 0; i < TOTAL_SEEDS; ++i)
-				total += seeds_[i].Size();
-
-			if (total == (13 * TOTAL_SEEDS)) {
+		
+			if (SeedsFull()) {
 				// handle victory condition!
+				Victory();
 			}
         }
         else if (pos >= Renderer::FirstRow && 

@@ -21,10 +21,12 @@ public:
     void X(int v) { x_ = v; }
     void Y(int v) { y_ = v; }
 
-    Point & operator+(Point &p) { x_ += p.x_; y_ += p.y_; return *this; }
-    Point & operator-(Point &p) { x_ -= p.x_; y_ -= p.y_; return *this; }
+    Point & operator+(const Point &p) { x_ += p.x_; y_ += p.y_; return *this; }
+    Point & operator-(const Point &p) { x_ -= p.x_; y_ -= p.y_; return *this; }
     bool operator==(Point &p) { return (x_ == p.x_ && y_ == p.y_); }
 };
+
+inline Point operator-(const Point &p1, const Point &p2) { return Point(p1.X() - p2.X(),p1.Y() - p2.Y());  }
 
 class CardRenderer
 {
@@ -44,6 +46,7 @@ class Renderer
         virtual void UpdateAll() = 0;
 		virtual void Clear() = 0;
         void Draw(const Row &, int pos);
+		void Move(const Card &c, int pos); 
         void Draw(const Stackable &, int pos);
         void Draw(const Card &c, const Point &p) { GetCardRenderer()->Draw(c, p); }
         void Clear(const Card &c) { GetCardRenderer()->Clear(c); }
