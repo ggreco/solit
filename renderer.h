@@ -20,7 +20,7 @@ public:
     int Y() const { return y_; }
     void X(int v) { x_ = v; }
     void Y(int v) { y_ = v; }
-
+    void set(int x, int y) { x_ = x; y_ = y; }
     Point & operator+(const Point &p) { x_ += p.x_; y_ += p.y_; return *this; }
     Point & operator-(const Point &p) { x_ -= p.x_; y_ -= p.y_; return *this; }
     bool operator==(Point &p) { return (x_ == p.x_ && y_ == p.y_); }

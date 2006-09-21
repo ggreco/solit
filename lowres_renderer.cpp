@@ -243,15 +243,21 @@ Move(const Card &card, const Point &pos)
 
 		double steps = sqrt(delta.X() * delta.X() + delta.Y() * delta.Y());
 
-		for (int i = 0; i < (int)steps; ++i) {
-			start.X(start.X() + (int)((double)delta.X() / steps));
-			start.Y(start.Y() + (int)((double)delta.Y() / steps));
+        std::cerr << "Moving " << card.str() << " of " << steps << " pixels\n";
+
+        double x = start.X(), y = start.Y();
+
+        for (int i = 0; i < (int)steps; i+=4) {
+            x += ((double)delta.X()) / (steps / 4.0);
+            y += ((double)delta.Y()) / (steps / 4.0);
+
+			start.set((int)x, (int)y);
 
 			Draw(card,  start);
 
 			rend_.Update();
 
-			SDL_Delay(10);
+			SDL_Delay(5);
 		}
 	}
 
