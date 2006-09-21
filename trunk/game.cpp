@@ -77,7 +77,13 @@ void Game::AutoComplete()
 				continue;
 
 			for (int j = 0; j < TOTAL_SEEDS; ++j) {
+    			if (!rows_[i].Size())
+	    			continue;
+
 				if (seeds_[j].CanGet(rows_[i].Get())) {
+
+                    std::cerr << "Moving " << rows_[i].Get().str() << " on "
+                              << seeds_[j].Get().str() << std::endl;
 
 					rend_->Move(rows_[i].Get(), Renderer::FirstSeedPos + j);
 
