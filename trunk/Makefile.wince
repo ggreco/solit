@@ -7,7 +7,7 @@ CXXFLAGS = -DWINCE -I/usr/local/arm-wince-pe/include/SDL
 TARGET = solit.exe
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ /usr/local/arm-wince-pe/lib/libSDLmain.a $(OBJS) -target=win -L/usr/local/SDL-1.2.6 -lSDL /usr/local/arm-wince-pe/lib/aygshell.lib   
+	$(CXX) -o $@ /usr/local/arm-wince-pe/lib/libSDLmain.a $(OBJS) -target=win -L.. -lSDLarm /usr/local/arm-wince-pe/lib/aygshell.lib   
 
 clean:
 	rm -f *.o
