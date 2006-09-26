@@ -4,19 +4,32 @@
 #include <math.h>
 
 ResInfo res[] = {
-    {320, 240, 20, 30, 2, 2, 8, 8, "/low_seeds.bmp", "/low_back.bmp"},
-    {640, 480, 40, 60, 4, 4, 13, 16, "/med_seeds.bmp", "/med_back.bmp"}
+    {320, 240, 20, 30, 2, 2, 8, 8, "low"},
+    {640, 480, 40, 60, 4, 4, 13, 16, "med"}
 };
 
 void SdlRenderer::
 Clear()
 {
+    int i;
+
 	card_rend_.ClearBuffers();
 
     SDL_FillRect(screen_, NULL, background_);
 
-	for (int i = 0; i < TOTAL_SEEDS; i++)
+	for (i = 0; i < TOTAL_SEEDS; i++)
         DrawRect(seed_positions_[i], card_size_, white_);
+
+    for (i = 0; i < WIDGET_NUM; i++) {
+        if (widgets_[i]) {
+            SDL_Rect dst;
+
+            dst.x = widget_positions_[i].X();
+            dst.y = widget_positions_[i].Y();
+
+            SDL_BlitSurface(widgets_[i], NULL, screen_, &dst);
+        }
+    }
 
     UpdateAll();
 }
@@ -112,8 +125,13 @@ SdlRenderer::
 SdlRenderer(int type) :
     res_(res[type]), card_rend_(".", *this)
 {
+    int i;
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         throw std::string("Unable to initialize SDL.");
+
+    for (i = 0; i < WIDGET_NUM; ++i)
+        widgets_[i] = NULL;
 
     atexit(SDL_Quit);
 
@@ -122,6 +140,23 @@ SdlRenderer(int type) :
     if (!(screen_ = SDL_SetVideoMode(screen_size_.X(), screen_size_.Y(), 
 				16, OPENFLAGS)))
         throw std::string("Unable to open display.");
+
+    if (widgets_[QUIT_GAME] = SDL_LoadBMP((std::string("./") + res_.prefix + "_close.bmp").c_str())) {
+        widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w, 0,
+                                     widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
+    }
+
+    if (widgets_[UNDO_MOVE] = SDL_LoadBMP((std::string("./") + res_.prefix + "_undo.bmp").c_str())) {
+            widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w, 
+                                         (screen_->h - widgets_[UNDO_MOVE]->h) / 2,
+                                         widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
+    }
+
+    if (widgets_[NEW_GAME] = SDL_LoadBMP((std::string("./") + res_.prefix + "_new.bmp").c_str())) {
+            widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w, 
+                                        screen_->h - widgets_[NEW_GAME]->h,
+                                        widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
+    }
 
     background_ =  SDL_MapRGB(screen_->format,
                         0, 200, 0);
@@ -142,8 +177,6 @@ SdlRenderer(int type) :
 
     card_rend_.Optimize();
 
-	int i;
-
     for (i = 0; i < TOTAL_SEEDS; i++) {
         seed_positions_[i] = Point(cards_position_.X() + res_.spacing_x + 
                                    (i + 2) * (card_size_.X() + res_.spacing_x),
@@ -163,14 +196,14 @@ SdlCardRenderer::
 SdlCardRenderer(const std::string &path, SdlRenderer &rend) :
     rend_(rend)
 {
-    std::string file = path + rend_.res_.cards_file;
+    std::string file = path + "/" + rend_.res_.prefix + "_seeds.bmp";
 
     source_ = SDL_LoadBMP(file.c_str());
 
     if (!source_)
         throw std::string("Unable to load cards GFX");
 
-    file = path + rend_.res_.back_file;
+    file = path + "/" + rend_.res_.prefix + "_back.bmp";
 
     back_ = SDL_LoadBMP(file.c_str());
 
@@ -242,8 +275,6 @@ Move(const Card &card, const Point &pos)
 		delta = pos - start;
 
 		double steps = sqrt(delta.X() * delta.X() + delta.Y() * delta.Y());
-
-        std::cerr << "Moving " << card.str() << " of " << steps << " pixels\n";
 
         double x = start.X(), y = start.Y();
 

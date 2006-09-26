@@ -18,6 +18,7 @@ Game::Game(Renderer *r) :
 void Game::
 Restart()
 {
+    moves_.Clear();
 	cards_.Clear();
 	for (int i = 0; i < TOTAL_SEEDS; i++)
 		seeds_[i].Clear();
@@ -37,7 +38,6 @@ Restart()
 void Game::
 MouseMove(const Point &p)
 {
-//    std::cerr << "Move to " << p.X() << "," << p.Y() << "\n";
     if (!selection_.Empty()) {
         if (selection_.Size() > 1)
             rend_->Clear(selection_.Get());
@@ -82,9 +82,6 @@ void Game::AutoComplete()
 
 				if (seeds_[j].CanGet(rows_[i].Get())) {
 
-                    std::cerr << "Moving " << rows_[i].Get().str() << " on "
-                              << seeds_[j].Get().str() << std::endl;
-
 					rend_->Move(rows_[i].Get(), Renderer::FirstSeedPos + j);
 
 					seeds_[j].Add(rows_[i].GetCard());
@@ -98,6 +95,12 @@ void Game::AutoComplete()
 	}
 
 	Victory();
+}
+
+void Game::
+UndoMove()
+{
+    moves_.Revert(rend_);
 }
 
 void Game::
@@ -195,6 +198,10 @@ ReleaseButton(const Point &p)
             selection_.Size() == 1 &&
             seeds_[pos - Renderer::FirstSeedPos].CanGet(selection_.Get())) {
 
+            moves_.Add(*selection_.Origin(), selection_.OriginPosition(),
+                          seeds_[pos - Renderer::FirstSeedPos], pos,
+                          selection_);
+
             seeds_[pos - Renderer::FirstSeedPos].Add(selection_.Get());
             selection_.Remove();
             rend_->Draw(seeds_[pos - Renderer::FirstSeedPos], pos);
@@ -208,6 +215,10 @@ ReleaseButton(const Point &p)
         else if (pos >= Renderer::FirstRow && 
                  pos <= Renderer::LastRow &&
                  rows_[pos - Renderer::FirstRow].CanGet(selection_.First())) {
+
+            moves_.Add(*selection_.Origin(), selection_.OriginPosition(),
+                          rows_[pos - Renderer::FirstRow], pos,
+                          selection_);
 
             while (!selection_.Empty()) {
                 rows_[pos - Renderer::FirstRow].Add(selection_.First());
@@ -229,10 +240,18 @@ ReleaseButton(const Point &p)
             if (!deck_.Empty()) {
                 Card c = deck_.GetCard();
 
+                moves_.Add(deck_, Renderer::DeckPos,
+                              cards_, Renderer::CardPos, 
+                              c);
+
                 c.Covered(false);
                 cards_.Add(c);
             }
             else {
+                moves_.Add(cards_, Renderer::CardPos,
+                              deck_, Renderer::DeckPos, 
+                              cards_);
+
                 while (!cards_.Empty()) {
                     deck_.Add(cards_.Get());
                     cards_.Remove();
@@ -242,10 +261,26 @@ ReleaseButton(const Point &p)
             rend_->Draw(cards_, Renderer::CardPos);
             rend_->Draw(deck_, Renderer::DeckPos);
         }
+        else if (pos >= Renderer::FirstWidget && pos <= Renderer::LastWidget) {
+            pos -= Renderer::FirstWidget;
+
+            switch (pos) {
+                case QUIT_GAME:
+                    exit(0);
+                    break;
+                case UNDO_MOVE:
+                    UndoMove();
+                    break;
+                case NEW_GAME:
+                    Restart();
+                    break;
+            }
+        }
         else if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
             int p = pos - Renderer::FirstRow;
             if (!rows_[p].Empty()) {
                 if (rows_[p].Get().Covered()) {
+                    moves_.Add(rows_[p], pos);
                     rows_[p].Get().Covered(false);
                     rend_->Draw(rows_[p], p);
                 }
@@ -273,6 +308,10 @@ DoubleClick(const Point &p)
     
     for (int i = 0; i < TOTAL_SEEDS; i++) {
         if (seeds_[i].CanGet(o->Get())) {
+            moves_.Add(*o, pos,
+                       seeds_[i], Renderer::FirstSeedPos + i, 
+                       o->Get());
+
             seeds_[i].Add(o->Get());
             o->Remove();
 
@@ -307,3 +346,35 @@ void Game::Update()
     for (int k = 0; k < TOTAL_SEEDS; ++k)
         rend_->Draw(seeds_[k], Renderer::FirstSeedPos + k);
 }
+
+void MoveList::
+Revert(Renderer *rend)
+{
+    if (moves_.empty())
+        return;
+
+    Move &last = moves_.top();
+
+    if (!last.dest) {
+        last.source->Get().Covered(true);
+        rend->Draw(*last.source, last.source_pos);
+
+    }
+    else {
+        for (RevCardIterator it = last.cards.GetCards().rbegin(); 
+                      it != last.cards.GetCards().rend(); ++it)
+           rend->Clear(*it);
+        
+        while (last.cards.Size()) {
+            last.source->Add(last.cards.First());
+            last.dest->Remove();
+            last.cards.RemoveFirst();
+        }
+
+        rend->Draw(*last.source, last.source_pos);
+        rend->Draw(*last.dest, last.dest_pos);
+    }
+
+    moves_.pop();
+}
+

@@ -11,6 +11,7 @@
 #include "seed.h"
 #include "renderer.h"
 #include "action.h"
+#include <stack>
 
 class Renderer;
 class Point;
@@ -28,6 +29,50 @@ public:
     int OriginPosition() const { return position_; }
 };
 
+class Move
+{
+public:
+    Stackable *source;
+    int source_pos;
+    Stackable *dest;
+    int dest_pos;
+    Stackable cards;
+
+    Move(Stackable *from, int srcpos, 
+         Stackable *to = NULL,  int destpos = 0, 
+         const Stackable *c = NULL) :
+         source(from), source_pos(srcpos),
+         dest(to), dest_pos(destpos) 
+         {
+             if (c)
+                 cards = *c;
+         }
+};
+
+class MoveList 
+{
+    std::stack<Move> moves_;
+public:
+
+    void Revert(Renderer *);
+
+    void Clear() { while(!moves_.empty()) moves_.pop(); }
+    void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Card &c) {
+        Stackable st;
+
+        st.Add(c);
+        moves_.push(Move(&from, srcpos,  &to, destpos, &st));
+    }
+
+    void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Stackable &c) {
+        moves_.push(Move(&from, srcpos,  &to, destpos, &c));
+    }
+
+    void Add(Row &from, int position) {
+        moves_.push(Move(&from, position));
+    }
+};
+
 class Game : public ActionManager
 {
     Renderer *rend_;
@@ -36,6 +81,7 @@ class Game : public ActionManager
     Row  rows_[COLUMNS];
     Seed seeds_[TOTAL_SEEDS];
     Selection selection_;
+    MoveList moves_;
 
     void MouseMove(const Point &);
     void PressButton(const Point &);
@@ -46,6 +92,7 @@ class Game : public ActionManager
 	void AutoComplete();
 	void Victory();
 	bool SeedsFull();
+    void UndoMove();
 
 public:
 	void Restart();

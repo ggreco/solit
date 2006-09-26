@@ -26,6 +26,23 @@ public:
     bool operator==(Point &p) { return (x_ == p.x_ && y_ == p.y_); }
 };
 
+class Rect
+{
+    Point pos_;
+    Point size_;
+public:
+    Rect() : pos_(0,0), size_(0,0) {}
+    Rect(int x, int y, int w, int h) : pos_(x, y), size_(w, h) {}
+    void set(int x, int y, int w, int h) { pos_.set(x, y); size_.set(w, h); }
+    int width() const { return size_.X(); }
+    int height() const { return size_.Y(); }
+    int X() const { return pos_.X(); }
+    int Y() const { return pos_.Y(); }
+    bool inside(int x, int y) const { return (x >= pos_.X() && x < (pos_.X() + size_.X()) &&
+                                          y >= pos_.Y() && y < (pos_.Y() + size_.Y()) ); }
+    bool inside(const Point &p) const { return inside(p.X(), p.Y()); }
+};
+
 inline Point operator-(const Point &p1, const Point &p2) { return Point(p1.X() - p2.X(),p1.Y() - p2.Y());  }
 
 class CardRenderer
@@ -37,10 +54,15 @@ class CardRenderer
         virtual void Clear(const Card &) = 0;
 };
 
+enum Widgets {NEW_GAME, QUIT_GAME, UNDO_MOVE, HIGHSCORE, WIDGET_NUM};
+
 class Renderer
 {
     public:
-        enum {DeckPos = 0 , CardPos = 1, FirstSeedPos = 2, LastSeedPos = 9, FirstRow = 10, LastRow = 9 + COLUMNS};
+        enum {DeckPos = 0 , CardPos = 1, FirstSeedPos = 2, 
+             LastSeedPos = (FirstSeedPos + TOTAL_SEEDS - 1), 
+             FirstRow , LastRow = (FirstRow + COLUMNS - 1), 
+             FirstWidget, LastWidget = (FirstWidget + WIDGET_NUM -1 )};
         virtual bool Wait() = 0;
 		virtual void Update() = 0;
         virtual void UpdateAll() = 0;
@@ -66,10 +88,11 @@ class Renderer
         virtual ~Renderer() {};
 
     protected:
+        Rect widget_positions_[WIDGET_NUM];
         Point deck_position_;
         Point cards_position_;
         Point card_size_;
-        Point seed_positions_[8];
+        Point seed_positions_[TOTAL_SEEDS];
         Point column_positions_[COLUMNS];
         Point screen_size_;
     private:
