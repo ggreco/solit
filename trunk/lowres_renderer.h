@@ -14,8 +14,7 @@ struct ResInfo
     int card_width, card_height;
     int spacing_x, spacing_y;
     int symbol_width, symbol_height;
-    const char *cards_file;
-    const char *back_file;
+    const char *prefix;
 };
 
 class SdlRenderer;
@@ -60,7 +59,7 @@ class SdlRenderer : public Renderer
         Uint32 white_, black_, background_;
         SdlCardRenderer card_rend_;
         std::vector<SDL_Rect> rects_;
-
+        SDL_Surface *widgets_[WIDGET_NUM];
         SDL_Surface * MakeDirty() {
             return SDL_CreateRGBSurface(SDL_SWSURFACE,
                     card_size_.X(), card_size_.Y(), 16,

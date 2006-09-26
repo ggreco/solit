@@ -7,4 +7,4 @@ $(TARGET): $(OBJS)
 	g++ -o $@ $(OBJS) `sdl-config --libs`
 
 clean:
-	rm -f *.o
+	rm -f *.o $(TARGET)

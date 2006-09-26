@@ -8,6 +8,7 @@
 typedef std::deque<Card> Cards;
 typedef std::deque<Card>::iterator CardIterator;
 typedef std::deque<Card>::const_iterator ConstCardIterator;
+typedef std::deque<Card>::reverse_iterator RevCardIterator;
 
 class Stackable
 {

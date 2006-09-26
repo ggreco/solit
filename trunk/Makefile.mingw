@@ -1,0 +1,14 @@
+OBJS = main.o lowres_renderer.o deck.o game.o renderer.o card.o
+EXE = solit.exe
+
+CROSSDIR = /usr/local/cross-gcc33/i386-mingw32msvc/
+CXX = $(CROSSDIR)/bin/g++
+CC = $(CROSSDIR)/bin/gcc
+LFLAGS = -s -mwindows -mno-cygwin -lmingw32 -lSDLmain -lSDL 
+CXXFLAGS = -O3 -I$(CROSSDIR)/include/SDL 
+
+$(EXE): $(OBJS)
+	$(CXX) -o $@ $(OBJS) $(LFLAGS)
+
+clean:
+	rm -rf *.o $(EXE)

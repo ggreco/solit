@@ -64,13 +64,21 @@ GetPosition(const Point &p)
     else { 
 		int i;
 
-        for (i = 0; i < 8; ++i)
+        for (i = 0; i < TOTAL_SEEDS; ++i)
             if (inside(p, seed_positions_[i], card_size_))
                 return FirstSeedPos + i;
 
         for (i = 0; i < COLUMNS; ++i) {
             if (inside(p, column_positions_[i], Point(card_size_.X(), screen_size_.Y())))
                 return FirstRow + i;
+        }
+
+        for (i = 0; i < WIDGET_NUM; ++i) {
+            if (!widget_positions_[i].width())
+                continue; // skip unavailable widgets
+
+            if (widget_positions_[i].inside(p))
+                return FirstWidget + i;
         }
     }
 
