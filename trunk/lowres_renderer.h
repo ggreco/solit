@@ -14,6 +14,7 @@ struct ResInfo
     int card_width, card_height;
     int spacing_x, spacing_y;
     int symbol_width, symbol_height;
+    double scaling;
     const char *prefix;
 };
 
@@ -54,6 +55,7 @@ class SdlCardRenderer : public CardRenderer
 class SdlRenderer : public Renderer
 {
     private:
+        Uint32 lastclick_;
         ResInfo &res_;
         SDL_Surface *screen_;
         Uint32 white_, black_, background_;
@@ -71,12 +73,15 @@ class SdlRenderer : public Renderer
         void DrawRect(const Point &pos, const Point &size, Uint32 color);
         void DrawEmpty(const Point &pos) { DrawRect(pos, card_size_, background_); }
         friend class SdlCardRenderer;
+        void ParseEvent(const SDL_Event &);
 
     public:
 		void Clear();
         void AddDirtyRect(const SDL_Rect &r) { if (r.x < screen_->w && r.y < screen_->h) rects_.push_back(r); }
         void UpdateAll();
         void Update();
+        void Delay(int ms) { SDL_Delay(ms); }
+        void Poll();
         bool Wait();
         SdlRenderer(int);
         ~SdlRenderer() {};
