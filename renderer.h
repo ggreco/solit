@@ -63,11 +63,18 @@ class Renderer
              LastSeedPos = (FirstSeedPos + TOTAL_SEEDS - 1), 
              FirstRow , LastRow = (FirstRow + COLUMNS - 1), 
              FirstWidget, LastWidget = (FirstWidget + WIDGET_NUM -1 )};
+        virtual void Poll() = 0;
+        virtual void Delay(int) = 0;
         virtual bool Wait() = 0;
 		virtual void Update() = 0;
         virtual void UpdateAll() = 0;
 		virtual void Clear() = 0;
         void Draw(const Row &, int pos);
+        void Move(const Card &c, const Point &pos) { 
+            GetCardRenderer()->Move(c, 
+                Point( (int) ((double)pos.X() * scaling_), 
+                       (int) ((double)pos.Y() * scaling_)));
+        }
 		void Move(const Card &c, int pos); 
         void Draw(const Stackable &, int pos);
         void Draw(const Card &c, const Point &p) { GetCardRenderer()->Draw(c, p); }
@@ -95,6 +102,7 @@ class Renderer
         Point seed_positions_[TOTAL_SEEDS];
         Point column_positions_[COLUMNS];
         Point screen_size_;
+        double scaling_;
     private:
 		bool inside(const Point &p, const Point &orig, const Point &size)
 		{

@@ -4,8 +4,8 @@
 #include <math.h>
 
 ResInfo res[] = {
-    {320, 240, 20, 30, 2, 2, 8, 8, "low"},
-    {640, 480, 40, 60, 4, 4, 13, 16, "med"}
+    {320, 240, 20, 30, 2, 2, 8, 8, 1.0, "low"},
+    {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"}
 };
 
 void SdlRenderer::
@@ -74,44 +74,56 @@ Update()
     }
 }
 
+void SdlRenderer::
+Poll()
+{
+    SDL_Event e;
+
+    if (SDL_PollEvent(&e)) 
+        ParseEvent(e);
+}
+
+void SdlRenderer::
+ParseEvent(const SDL_Event &e)
+{
+    switch (e.type) {
+        case SDL_QUIT:
+            exit(0);
+            break;
+        case SDL_KEYDOWN:
+            Renderer::KeyPress(e.key.keysym.sym);
+            break;
+        case SDL_KEYUP:
+            Renderer::KeyRelease(e.key.keysym.sym);
+            break;
+        case SDL_MOUSEMOTION:
+            Renderer::MouseMove(Point(e.motion.x, e.motion.y));
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            Renderer::PressButton(Point(e.button.x, e.button.y));
+            break;                    
+        case SDL_MOUSEBUTTONUP:
+            Renderer::ReleaseButton(Point(e.button.x, e.button.y));
+
+            if ((SDL_GetTicks() - lastclick_) < 300) {
+                Renderer::DoubleClick(Point(e.button.x, e.button.y));
+                lastclick_ = 0;
+            }
+            else
+                lastclick_ = SDL_GetTicks();
+
+            break;
+    }
+}
+
 bool SdlRenderer::
 Wait()
 {
-    static Uint32 lastclick = 0L;
-
     for(;;) {
         SDL_Event e;
 
-        if (SDL_WaitEvent(&e)) {
-            switch (e.type) {
-                case SDL_QUIT:
-                    return false;
-                    break;
-				case SDL_KEYDOWN:
-					Renderer::KeyPress(e.key.keysym.sym);
-					break;
-				case SDL_KEYUP:
-					Renderer::KeyRelease(e.key.keysym.sym);
-					break;
-                case SDL_MOUSEMOTION:
-                    Renderer::MouseMove(Point(e.motion.x, e.motion.y));
-                    break;
-                case SDL_MOUSEBUTTONDOWN:
-                    Renderer::PressButton(Point(e.button.x, e.button.y));
-                    break;                    
-                case SDL_MOUSEBUTTONUP:
-                    Renderer::ReleaseButton(Point(e.button.x, e.button.y));
-
-                    if ((SDL_GetTicks() - lastclick) < 300) {
-                        Renderer::DoubleClick(Point(e.button.x, e.button.y));
-                        lastclick = 0;
-                    }
-                    else
-                        lastclick = SDL_GetTicks();
-
-                    break;
-            }
-        }
+        if (SDL_WaitEvent(&e))
+            ParseEvent(e);
     }
 }
 
@@ -123,7 +135,7 @@ Wait()
 
 SdlRenderer::
 SdlRenderer(int type) :
-    res_(res[type]), card_rend_(".", *this)
+    lastclick_(0), res_(res[type]), card_rend_(".", *this)
 {
     int i;
 
@@ -136,6 +148,8 @@ SdlRenderer(int type) :
     atexit(SDL_Quit);
 
     screen_size_ = Point(res_.screen_width, res_.screen_height);
+
+    scaling_ = res_.scaling;
 
     if (!(screen_ = SDL_SetVideoMode(screen_size_.X(), screen_size_.Y(), 
 				16, OPENFLAGS)))

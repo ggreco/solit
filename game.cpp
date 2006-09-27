@@ -62,11 +62,80 @@ SeedsFull()
 	return (total == (13 * TOTAL_SEEDS));
 }
 
+typedef struct
+{
+    int x;
+    int y;
+} posdata;
+
+posdata data[] = 
+{
+    {0 , 0}, {40, 0}, {10, 30}, {30, 30}, {20,60}, // Y
+    {90, 0}, {110, 0}, {80, 20}, {120,20}, {80, 40}, {120, 40}, {90, 60}, {110, 60}, // O
+    {160, 0}, {205, 0}, {160, 20}, {205,20}, {160, 40}, {205, 40}, {175, 60}, {190, 60}, // U
+    {0 , 100}, {60, 100}, {5, 130}, {55, 130}, {10,160}, {50, 160},  {25, 145}, {40, 145}, // W
+    {100 , 100}, {100, 130}, {100, 160}, // I
+    {140 , 100}, {140, 130}, {140, 160},  {180 , 100}, {180, 130}, {180, 160}, {155, 120}, {165, 140}, // N
+    {220, 100}, {220, 120}, {220, 160}, // !
+    {-1, -1}
+};
+
 void Game::Victory()
 {
+    moves_.Clear(); // to avoid crashes if one uses undo
 	rend_->Clear();
+    Stackable used;
 
-	//  XXX implementare animazione vittoria.
+    status_ = PLAYING_VICTORY;
+
+    int deck = 0, idx = 0;
+
+    int x_offset = 20, y_offset = 40;
+
+    while (data[idx].x >= 0 ) {
+            deck++;
+
+            if (deck == TOTAL_SEEDS)
+                deck = 0;
+
+    	    rend_->Move(seeds_[deck].Get(), Point(data[idx].x + x_offset, data[idx].y + y_offset));
+
+            used.Add(seeds_[deck].Get());
+
+            seeds_[deck].Remove();
+
+            rend_->Poll();
+
+            if (restarted_)
+                return;
+
+            rend_->Delay(5);
+    	    rend_->Update();
+            idx++;
+    }
+
+    bool flag = true;
+
+    for (;;) {
+        idx = 0;
+        CardIterator it = used.GetCards().begin();
+
+        x_offset += (rand() % 6) - 3;
+        y_offset += (rand() % 6) - 3;
+
+        while (data[idx].x >= 0 ) {
+            it->Covered(flag);
+    	    rend_->Move(*it, Point(data[idx].x + x_offset, data[idx].y + y_offset));
+
+            idx++;
+            it++;
+            rend_->Poll();
+            rend_->Delay(10);
+    	    rend_->Update();
+        }
+
+        flag = !flag;
+    }
 }
 
 void Game::AutoComplete()
@@ -119,6 +188,33 @@ KeyRelease(char key)
 			}
 
 			break;
+        case 'w':
+            deck_.Clear();
+
+          	for (int j = 0; j < 2; j++) {
+               for (int i = 1; i < 14; i++) {
+                    Card c1(i, Hearts, j);
+                    Card c2(i, Squares, j);
+                    Card c3(i, Pikes, j);
+                    Card c4(i, Flowers, j);
+
+                    c1.Covered(false);
+                    c2.Covered(false);
+                    c3.Covered(false);
+                    c4.Covered(false);
+
+                    seeds_[j * 4].Add(c1); 
+                    seeds_[1 + j * 4].Add(c2); 
+                    seeds_[2 + j * 4].Add(c3); 
+                    seeds_[3 + j * 4].Add(c4);
+
+                    for (int k = 0; k < TOTAL_SEEDS; ++k)
+                        rend_->Draw(seeds_[k], Renderer::FirstSeedPos + k);
+                }
+            }
+
+            Victory();
+            break;
 		case 'q':
 			exit(0);
 			break;
