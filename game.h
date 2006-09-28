@@ -75,6 +75,8 @@ public:
 
 class Game : public ActionManager
 {
+    enum StatusValue {PLAYING, PLAYING_VICTORY};
+
     Renderer *rend_;
     Deck deck_;
     Stackable cards_;
@@ -82,6 +84,7 @@ class Game : public ActionManager
     Seed seeds_[TOTAL_SEEDS];
     Selection selection_;
     MoveList moves_;
+    StatusValue status_;
 
     void MouseMove(const Point &);
     void PressButton(const Point &);
