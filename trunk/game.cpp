@@ -4,7 +4,7 @@
 #include <time.h>
 
 Game::Game(Renderer *r) :
-    rend_(r)
+    rend_(r), status_(PLAYING)
 {
     srand(time(NULL));
     r->SetActionManager(this);
@@ -33,6 +33,8 @@ Restart()
 
 	Update();
 	rend_->UpdateAll();
+
+    status_ = PLAYING;
 }
 
 void Game::
@@ -70,7 +72,7 @@ typedef struct
 
 posdata data[] = 
 {
-    {0 , 0}, {40, 0}, {10, 30}, {30, 30}, {20,60}, // Y
+    {0 , 0}, {40, 0}, {10, 15}, {30, 15}, {20, 40}, {20,60}, // Y
     {90, 0}, {110, 0}, {80, 20}, {120,20}, {80, 40}, {120, 40}, {90, 60}, {110, 60}, // O
     {160, 0}, {205, 0}, {160, 20}, {205,20}, {160, 40}, {205, 40}, {175, 60}, {190, 60}, // U
     {0 , 100}, {60, 100}, {5, 130}, {55, 130}, {10,160}, {50, 160},  {25, 145}, {40, 145}, // W
@@ -106,7 +108,7 @@ void Game::Victory()
 
             rend_->Poll();
 
-            if (restarted_)
+            if (status_ == PLAYING)
                 return;
 
             rend_->Delay(5);
@@ -120,17 +122,25 @@ void Game::Victory()
         idx = 0;
         CardIterator it = used.GetCards().begin();
 
-        x_offset += (rand() % 6) - 3;
-        y_offset += (rand() % 6) - 3;
-
         while (data[idx].x >= 0 ) {
             it->Covered(flag);
     	    rend_->Move(*it, Point(data[idx].x + x_offset, data[idx].y + y_offset));
 
             idx++;
             it++;
-            rend_->Poll();
-            rend_->Delay(10);
+
+            int i = 0;
+
+            while (i < 4) {
+                rend_->Poll();
+
+                if (status_ == PLAYING)
+                    return;
+
+                rend_->Delay(20);
+                i++;
+            }
+
     	    rend_->Update();
         }
 
@@ -229,7 +239,7 @@ PressButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
 
-    if (!selection_.Empty())
+    if (!selection_.Empty() || status_ == PLAYING_VICTORY)
         return;
 
     if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
@@ -282,7 +292,19 @@ ReleaseButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
 
-    if (!selection_.Empty()) {
+    if (status_ == PLAYING_VICTORY) {
+        pos -= Renderer::FirstWidget;
+
+        switch (pos) {
+            case QUIT_GAME:
+                exit(0);
+                break;
+            case NEW_GAME:
+                Restart();
+                break;
+        }
+    }
+    else if (!selection_.Empty()) {
 
         rend_->Clear(selection_.Get());
 
@@ -399,7 +421,7 @@ DoubleClick(const Point &p)
     else if (pos == Renderer::CardPos) 
         o = &cards_;
 
-    if (!o || o->Empty())
+    if (!o || o->Empty() || status_ == PLAYING_VICTORY)
         return;
     
     for (int i = 0; i < TOTAL_SEEDS; i++) {
