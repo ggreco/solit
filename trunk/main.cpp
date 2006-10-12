@@ -1,6 +1,8 @@
 #include "lowres_renderer.h"
 #include <iostream>
 
+extern void init_memory_images();
+
 #ifndef WINCE
 
 #define RENDERER_SET 1
@@ -17,6 +19,8 @@ int SDL_main(int argc, char *argv[])
 #endif
 {
 	try {
+		init_memory_images();
+
 	    Renderer *r = new SdlRenderer(RENDERER_SET);
 	    Game game(r);
 
