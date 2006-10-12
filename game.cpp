@@ -437,6 +437,9 @@ DoubleClick(const Point &p)
 
             rend_->Update();
 
+            if (SeedsFull())
+                Victory();
+
             return;
         }
     }

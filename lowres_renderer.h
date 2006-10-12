@@ -86,6 +86,8 @@ class SdlRenderer : public Renderer
         SdlRenderer(int);
         ~SdlRenderer() {};
         CardRenderer *GetCardRenderer() { return &card_rend_; }
+
+		SDL_Surface *load_image(const std::string &);
 };
 
 #endif

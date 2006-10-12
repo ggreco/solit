@@ -133,6 +133,22 @@ Wait()
 #define OPENFLAGS SDL_SWSURFACE
 #endif
 
+SDL_Surface *SdlRenderer::
+load_image(const std::string &base)
+{
+	extern SDL_RWops *load_or_grab_image(const std::string &);
+	std::string path = std::string("./") + res_.prefix + "_" + base + ".bmp";
+
+	std::cerr << "Loading " << path << std::endl;
+
+	if (SDL_RWops *rw = load_or_grab_image(path)) {
+		SDL_Surface *dest = SDL_LoadBMP_RW(rw, 1); // rwops is closed by loadbmp
+
+		return dest;
+	}
+
+	return NULL;
+}
 SdlRenderer::
 SdlRenderer(int type) :
     lastclick_(0), res_(res[type]), card_rend_(".", *this)
@@ -155,18 +171,18 @@ SdlRenderer(int type) :
 				16, OPENFLAGS)))
         throw std::string("Unable to open display.");
 
-    if (widgets_[QUIT_GAME] = SDL_LoadBMP((std::string("./") + res_.prefix + "_close.bmp").c_str())) {
+	if (widgets_[QUIT_GAME] = load_image("close") ) {
         widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w, 0,
                                      widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
     }
 
-    if (widgets_[UNDO_MOVE] = SDL_LoadBMP((std::string("./") + res_.prefix + "_undo.bmp").c_str())) {
+    if (widgets_[UNDO_MOVE] = load_image("undo") ) {
             widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w, 
                                          (screen_->h - widgets_[UNDO_MOVE]->h) / 2,
                                          widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
     }
 
-    if (widgets_[NEW_GAME] = SDL_LoadBMP((std::string("./") + res_.prefix + "_new.bmp").c_str())) {
+    if (widgets_[NEW_GAME] = load_image("new") ) {
             widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w, 
                                         screen_->h - widgets_[NEW_GAME]->h,
                                         widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
@@ -210,18 +226,10 @@ SdlCardRenderer::
 SdlCardRenderer(const std::string &path, SdlRenderer &rend) :
     rend_(rend)
 {
-    std::string file = path + "/" + rend_.res_.prefix + "_seeds.bmp";
-
-    source_ = SDL_LoadBMP(file.c_str());
-
-    if (!source_)
+    if (! (source_ = rend_.load_image("seeds")))
         throw std::string("Unable to load cards GFX");
 
-    file = path + "/" + rend_.res_.prefix + "_back.bmp";
-
-    back_ = SDL_LoadBMP(file.c_str());
-
-    if (!back_)
+    if (!(back_ = rend_.load_image("back")))
         throw std::string("Unable to load card background GFX");
 
     sw_ = rend_.res_.symbol_width;
