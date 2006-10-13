@@ -9,12 +9,14 @@ CXX=arm-wince-pe-gcc
 CXXFLAGS = -DWINCE -I/usr/local/arm-wince-pe/include/SDL
 TARGET = solit.exe
 
+all: iconbuild $(TARGET)
+
 iconbuild: iconbuild.cpp
 	g++ -o iconbuild iconbuild.cpp
 	-rm images.cpp
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ /usr/local/arm-wince-pe/lib/libSDLmain.a $(OBJS) -target=win -L.. -lSDLarm /usr/local/arm-wince-pe/lib/aygshell.lib   
+	$(CXX) -s -o $@ /usr/local/arm-wince-pe/lib/libSDLmain.a $(OBJS) -target=win -L.. -lSDLarm /usr/local/arm-wince-pe/lib/aygshell.lib   
 
 images.cpp: $(IMGS)
 	./iconbuild images.cpp $(IMGS)
