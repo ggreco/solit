@@ -199,6 +199,7 @@ KeyRelease(char key)
 
 			break;
         case 'w':
+			{
             deck_.Clear();
 
           	for (int j = 0; j < 2; j++) {
@@ -224,6 +225,7 @@ KeyRelease(char key)
             }
 
             Victory();
+			}
             break;
 		case 'q':
 			exit(0);
