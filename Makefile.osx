@@ -22,9 +22,19 @@ CXX=g++
 CXXFLAGS = -arch i386 -arch ppc -g -I/Library/Frameworks/SDL.framework/Headers
 CFLAGS = -arch i386 -arch ppc -g -I/Library/Frameworks/SDL.framework/Headers
 LFLAGS = -arch i386 -arch ppc -framework SDL -framework Cocoa
+BUNDLE_CONTENTS=$(TARGET).app/Contents
 
 $(TARGET): $(OBJS)
 	g++ -o $@ $(OBJS) $(LFLAGS)
+
+install: $(TARGET)
+	mkdir -p $(BUNDLE_CONTENTS)/MacOS
+	mkdir -p $(BUNDLE_CONTENTS)/Resources
+	mkdir -p $(BUNDLE_CONTENTS)/Resources/dtd
+	echo "APPL????" > $(BUNDLE_CONTENTS)/PkgInfo
+	cp Info.plist $(BUNDLE_CONTENTS)
+	cp $(TARGET) $(BUNDLE_CONTENTS)/MacOS
+	strip $(BUNDLE_CONTENTS)/MacOS/$(TARGET)
 
 clean:
 	rm -f *.o images.cpp iconbuild
