@@ -139,7 +139,7 @@ load_image(const std::string &base)
 	extern SDL_RWops *load_or_grab_image(const std::string &);
 	std::string path = std::string("./") + res_.prefix + "_" + base + ".bmp";
 
-	std::cerr << "Loading " << path << std::endl;
+//	std::cerr << "Loading " << path << std::endl;
 
 	if (SDL_RWops *rw = load_or_grab_image(path)) {
 		SDL_Surface *dest = SDL_LoadBMP_RW(rw, 1); // rwops is closed by loadbmp

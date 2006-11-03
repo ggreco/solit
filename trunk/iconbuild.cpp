@@ -35,8 +35,7 @@ int main(int argc, char *argv[])
                 "struct image_data {\n\tint length;\n\tunsigned char *data;\n"
 				"\timage_data(int s, unsigned char *d) : length(s), data(d) {}\n"
 				"\timage_data() : length(0) {}\n};\n\n"
-                "static std::map<std::string, image_data> images;\n\n"
-
+                "typedef std::map<std::string, image_data> imagemap;\n\n"
                );
 
         for (int i = 2; i < argc; i++) {
@@ -92,14 +91,15 @@ int main(int argc, char *argv[])
 
         }
 
-        fprintf(fout, "void init_memory_images() {\n");
+        fprintf(fout, "\nimagemap::value_type values[] = {\n");
         
         for (std::vector<image_data>::iterator it = images.begin(); it != images.end(); ++it) {
-            fprintf(fout, "\timages.insert(std::make_pair(\"%s\", image_data(%d,%s)));\n",
+            fprintf(fout, "\timagemap::value_type(\"%s\", image_data(%d,%s)),\n",
                                 it->name.c_str(), it->length, it->data.c_str());
         }
 
-        fprintf(fout, "}\n\n");
+        fprintf(fout, "};\n\n"
+                      "static imagemap images(values, values + %d);\n\n", images.size());
 
 		fprintf(fout, 
 				"SDL_RWops *load_or_grab_image(const std::string &name) {\n"
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 				"\tstd::string::size_type p = name.find_last_of(\"/\");\n"
 				"\tif (p != std::string::npos) n = name.substr(p + 1); else n = name;\n\n"
 				"\tif ( (it = images.find(n)) != images.end())\n"
-				"\t\treturn SDL_RWFromConstMem(it->second.data, it->second.length);\n\n"
+				"\t\treturn SDL_RWFromMem(it->second.data, it->second.length);\n\n"
 				"\treturn SDL_RWFromFile(name.c_str(), \"rb\");\n}\n");
 
         fclose(fout);
