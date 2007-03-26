@@ -148,7 +148,8 @@ void Game::Victory()
     }
 }
 
-void Game::AutoComplete()
+void Game::
+AutoComplete()
 {
 	while (!SeedsFull()) {
 		for (int i = 0; i < COLUMNS; ++i) {
@@ -176,6 +177,22 @@ void Game::AutoComplete()
 	Victory();
 }
 
+bool Game::
+IsCompleted()
+{
+    if (deck_.Size() == 0 &&
+       cards_.Size() == 0) {
+        for (int i = 0; i < COLUMNS; ++i)
+            if (rows_[i].Size() &&
+                    rows_[i].First().Covered())
+                return false;
+
+        return true;
+    }
+
+    return false;
+}
+
 void Game::
 UndoMove()
 {
@@ -187,15 +204,8 @@ KeyRelease(char key)
 {
 	switch(key) {
 		case 'a':
-			if (deck_.Size() == 0 &&
-				cards_.Size() == 0) {
-				for (int i = 0; i < COLUMNS; ++i)
-					if (rows_[i].Size() &&
-						rows_[i].First().Covered())
-						return;	
-					
+            if (IsCompleted())
 				AutoComplete();
-			}
 
 			break;
         case 'w':
@@ -409,6 +419,9 @@ ReleaseButton(const Point &p)
     }
 
     rend_->Update();
+
+    if (IsCompleted())
+        AutoComplete();
 }
 
 void Game::
@@ -441,6 +454,8 @@ DoubleClick(const Point &p)
 
             if (SeedsFull())
                 Victory();
+            else if (IsCompleted())
+                AutoComplete();
 
             return;
         }

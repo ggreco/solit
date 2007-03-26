@@ -300,9 +300,9 @@ Move(const Card &card, const Point &pos)
 
         double x = start.X(), y = start.Y();
 
-        for (int i = 0; i < (int)steps; i+=4) {
-            x += ((double)delta.X()) / (steps / 4.0);
-            y += ((double)delta.Y()) / (steps / 4.0);
+        for (int i = 0; i < (int)steps; i+=5) {
+            x += ((double)delta.X()) / (steps / 5.0);
+            y += ((double)delta.Y()) / (steps / 5.0);
 
 			start.set((int)x, (int)y);
 

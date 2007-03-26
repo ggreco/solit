@@ -96,7 +96,7 @@ class Game : public ActionManager
 	void Victory();
 	bool SeedsFull();
     void UndoMove();
-
+    bool IsCompleted();
 public:
 	void Restart();
     void Update();
