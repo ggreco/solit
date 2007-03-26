@@ -75,7 +75,7 @@ public:
 
 class Game : public ActionManager
 {
-    enum StatusValue {PLAYING, PLAYING_VICTORY};
+    enum StatusValue {PLAYING, PLAYING_VICTORY, AUTOCOMPLETE};
 
     Renderer *rend_;
     Deck deck_;

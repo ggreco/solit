@@ -151,6 +151,8 @@ void Game::Victory()
 void Game::
 AutoComplete()
 {
+    status_ = AUTOCOMPLETE;
+
 	while (!SeedsFull()) {
 		for (int i = 0; i < COLUMNS; ++i) {
 			if (!rows_[i].Size())
@@ -167,6 +169,8 @@ AutoComplete()
 					seeds_[j].Add(rows_[i].GetCard());
 
 					rend_->Draw(seeds_[j], Renderer::FirstSeedPos + j);
+
+                    rend_->Poll();
 
 					rend_->Update();
 				}
@@ -304,7 +308,7 @@ ReleaseButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
 
-    if (status_ == PLAYING_VICTORY) {
+    if (status_ == PLAYING_VICTORY || status_ == AUTOCOMPLETE) {
         pos -= Renderer::FirstWidget;
 
         switch (pos) {
