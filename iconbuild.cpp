@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
                 images.push_back(temp);
 
                 fprintf(fout, "\n// %s\n", temp.name.c_str());
-                fprintf(fout, "unsigned char %s[] = {\n", temp.data.c_str());
+                fprintf(fout, "static unsigned char %s[] = {\n", temp.data.c_str());
 
                 int line = 0;
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
         }
 
-        fprintf(fout, "\nimagemap::value_type values[] = {\n");
+        fprintf(fout, "\nstatic imagemap::value_type values[] = {\n");
         
         for (std::vector<image_data>::iterator it = images.begin(); it != images.end(); ++it) {
             fprintf(fout, "\timagemap::value_type(\"%s\", image_data(%d,%s)),\n",
