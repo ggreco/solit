@@ -304,6 +304,12 @@ Move(const Card &card, const Point &pos)
             x += ((double)delta.X()) / (steps / 5.0);
             y += ((double)delta.Y()) / (steps / 5.0);
 
+            if (x < 0.0)
+                x = 0;
+
+            if (y < 0.0)
+                y = 0;
+
 			start.set((int)x, (int)y);
 
 			Draw(card,  start);
