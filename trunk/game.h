@@ -2,10 +2,6 @@
 
 #define GAME_H
 
-#define COLUMNS 12
-#define TOTAL_DECKS 2
-#define TOTAL_SEEDS (TOTAL_DECKS * 4)
-
 #include "deck.h"
 #include "row.h"
 #include "seed.h"
@@ -75,33 +71,29 @@ public:
 
 class Game : public ActionManager
 {
+protected:
     enum StatusValue {PLAYING, PLAYING_VICTORY, AUTOCOMPLETE};
 
-    Renderer *rend_;
-    Deck deck_;
-    Stackable cards_;
-    Row  rows_[COLUMNS];
-    Seed seeds_[TOTAL_SEEDS];
-    Selection selection_;
-    MoveList moves_;
     StatusValue status_;
+    MoveList moves_;
+    Renderer *rend_;
+    Selection selection_;
+    Deck deck_;
+
+    virtual bool IsCompleted() = 0;
 
     void MouseMove(const Point &);
-    void PressButton(const Point &);
-    void ReleaseButton(const Point &);
-    void DoubleClick(const Point &);
 	void KeyPress(char key) {}
-	void KeyRelease(char key);
-	void AutoComplete();
-	void Victory();
-	bool SeedsFull();
+    void DoubleClick(const Point &p) {}
     void UndoMove();
-    bool IsCompleted();
 public:
-	void Restart();
-    void Update();
-    Game(Renderer *);
-    ~Game() {};
+
+    Renderer *Rend() { return rend_; }
+    void Restart();
+   	void Victory();
+    virtual void Update() = 0;
+    Game(int rend_id, int columns, int seeds = -1, bool card_slot = false);
+    virtual ~Game() {};
 };
 
 #endif

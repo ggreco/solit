@@ -64,11 +64,11 @@ GetPosition(const Point &p)
     else { 
 		int i;
 
-        for (i = 0; i < TOTAL_SEEDS; ++i)
+        for (i = 0; i < Seeds(); ++i)
             if (inside(p, seed_positions_[i], card_size_))
                 return FirstSeedPos + i;
 
-        for (i = 0; i < COLUMNS; ++i) {
+        for (i = 0; i < Columns(); ++i) {
             if (inside(p, column_positions_[i], Point(card_size_.X(), screen_size_.Y())))
                 return FirstRow + i;
         }

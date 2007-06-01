@@ -2,7 +2,8 @@
 #include <algorithm>
 
 Deck::
-Deck()
+Deck(int decks) :
+    decks_(decks)
 {
 	init();
 }
@@ -12,7 +13,7 @@ Deck::init()
 {
 	cards_.clear();
 
-	for (int j = 0; j < 2; j++) {
+	for (int j = 0; j < decks_; j++) {
         for (int i = 1; i < 14; i++) {
             Card c1(i, Hearts, j);
             Card c2(i, Squares, j);

@@ -83,7 +83,7 @@ class SdlRenderer : public Renderer
         void Delay(int ms) { SDL_Delay(ms); }
         void Poll();
         bool Wait();
-        SdlRenderer(int);
+        SdlRenderer(int id, int cols, int seeds, bool card_slot);
         ~SdlRenderer() {};
         CardRenderer *GetCardRenderer() { return &card_rend_; }
 

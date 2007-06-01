@@ -5,7 +5,9 @@
 
 ResInfo res[] = {
     {320, 240, 20, 30, 2, 2, 8, 8, 1.0, "low"},
-    {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"}
+    {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"},
+    {240, 320, 20, 30, 2, 2, 8, 8, 1.0, "low"},
+    {480, 640, 40, 60, 4, 4, 13, 16, 2.0, "med"},
 };
 
 void SdlRenderer::
@@ -17,7 +19,7 @@ Clear()
 
     SDL_FillRect(screen_, NULL, background_);
 
-	for (i = 0; i < TOTAL_SEEDS; i++)
+	for (i = 0; i < Seeds(); i++)
         DrawRect(seed_positions_[i], card_size_, white_);
 
     for (i = 0; i < WIDGET_NUM; i++) {
@@ -150,7 +152,8 @@ load_image(const std::string &base)
 	return NULL;
 }
 SdlRenderer::
-SdlRenderer(int type) :
+SdlRenderer(int type, int cols, int seeds, bool card_slot) :
+    Renderer(cols, seeds, card_slot),
     lastclick_(0), res_(res[type]), card_rend_(".", *this)
 {
     int i;
@@ -171,22 +174,14 @@ SdlRenderer(int type) :
 				16, OPENFLAGS)))
         throw std::string("Unable to open display.");
 
-	if (widgets_[QUIT_GAME] = load_image("close") ) {
-        widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w, 0,
-                                     widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
-    }
+	if (!(widgets_[QUIT_GAME] = load_image("close") )) 
+        throw std::string("Unable to load close image");
 
-    if (widgets_[UNDO_MOVE] = load_image("undo") ) {
-            widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w, 
-                                         (screen_->h - widgets_[UNDO_MOVE]->h) / 2,
-                                         widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
-    }
+    if (!(widgets_[UNDO_MOVE] = load_image("undo") ))
+        throw std::string("Unable to load undo image");
 
-    if (widgets_[NEW_GAME] = load_image("new") ) {
-            widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w, 
-                                        screen_->h - widgets_[NEW_GAME]->h,
-                                        widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
-    }
+    if (!(widgets_[NEW_GAME] = load_image("new") ))
+        throw std::string("Unable to load close image");
 
     background_ =  SDL_MapRGB(screen_->format,
                         0, 200, 0);
@@ -198,26 +193,61 @@ SdlRenderer(int type) :
     SDL_Rect r = { 0, 0, screen_->w, screen_->h};
     SDL_SetClipRect(screen_, &r);
 
-    deck_position_ = Point(res_.spacing_x / 2, res_.spacing_y / 2);
-    card_size_ = Point(res_.card_width, 
-                       res_.card_height);
+    if (type < 2) { // XXX this should be done by the game
 
-    cards_position_ = Point(deck_position_.X() + card_size_.X() + res_.spacing_x,
-                            deck_position_.Y());
+        widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w, 0,
+                widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
+        widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w, 
+                screen_->h - widgets_[NEW_GAME]->h,
+                widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
+        widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w, 
+                (screen_->h - widgets_[UNDO_MOVE]->h) / 2,
+                widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
+
+        deck_position_ = Point(res_.spacing_x / 2, res_.spacing_y / 2);
+        card_size_ = Point(res_.card_width, 
+                res_.card_height);
+
+        cards_position_ = Point(deck_position_.X() + card_size_.X() + res_.spacing_x,
+                deck_position_.Y());
+
+        for (i = 0; i < Seeds(); i++) {
+            seed_positions_[i] = Point(cards_position_.X() + res_.spacing_x + 
+                    (i + 2) * (card_size_.X() + res_.spacing_x),
+                    deck_position_.Y());
+        }
+
+        for (i = 0; i < Columns(); i++) {
+            column_positions_[i] = Point(deck_position_.X() + 
+                    i * (card_size_.X() + res_.spacing_x),
+                    deck_position_.Y() + res_.spacing_y * 2 + card_size_.Y());
+        }
+    }
+    else {
+        card_size_ = Point(res_.card_width, 
+                res_.card_height);
+
+        deck_position_ = Point(res_.spacing_x, screen_->h - res_.card_height - res_.spacing_y );
+
+        for (i = 0; i < Columns(); i++) 
+            column_positions_[i] = Point(res_.spacing_x + 
+                    i * (card_size_.X() + res_.spacing_x),
+                    deck_position_.Y() + res_.spacing_y * 2 + card_size_.Y());
+
+        widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w - res_.spacing_x, 
+                screen_->h - widgets_[QUIT_GAME]->h - res_.spacing_y,
+                widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
+
+        widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w * 2 - res_.spacing_x * 2, 
+                screen_->h - widgets_[NEW_GAME]->h - res_.spacing_y,
+                widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
+
+        widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w * 3 - res_.spacing_x * 3, 
+                screen_->h - widgets_[UNDO_MOVE]->h - res_.spacing_y,
+                widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
+    }
 
     card_rend_.Optimize();
-
-    for (i = 0; i < TOTAL_SEEDS; i++) {
-        seed_positions_[i] = Point(cards_position_.X() + res_.spacing_x + 
-                                   (i + 2) * (card_size_.X() + res_.spacing_x),
-                                   deck_position_.Y());
-    }
-
-    for (i = 0; i < COLUMNS; i++) {
-        column_positions_[i] = Point(deck_position_.X() + 
-                                   i * (card_size_.X() + res_.spacing_x),
-                                   deck_position_.Y() + res_.spacing_y * 2 + card_size_.Y());
-    }
 
 	Clear();
 }
