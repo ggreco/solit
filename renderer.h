@@ -56,12 +56,15 @@ class CardRenderer
 
 enum Widgets {NEW_GAME, QUIT_GAME, UNDO_MOVE, HIGHSCORE, WIDGET_NUM};
 
+#define MAX_TOTAL_SEEDS 24
+#define MAX_TOTAL_COLUMNS 32
+
 class Renderer
 {
     public:
         enum {DeckPos = 0 , CardPos = 1, FirstSeedPos = 2, 
-             LastSeedPos = (FirstSeedPos + TOTAL_SEEDS - 1), 
-             FirstRow , LastRow = (FirstRow + COLUMNS - 1), 
+             LastSeedPos = (FirstSeedPos + MAX_TOTAL_SEEDS - 1), 
+             FirstRow , LastRow = (FirstRow + MAX_TOTAL_COLUMNS - 1), 
              FirstWidget, LastWidget = (FirstWidget + WIDGET_NUM -1 )};
         virtual void Poll() = 0;
         virtual void Delay(int) = 0;
@@ -82,7 +85,16 @@ class Renderer
         void SetActionManager(ActionManager *a) { action_ = a; }
         virtual CardRenderer *GetCardRenderer()  = 0;
         virtual void DrawEmpty(const Point &p) = 0;
-        Renderer() : action_(NULL) {};
+        Renderer(int cols, int seeds = -1, bool card_slot = false) : 
+            columns_(cols),
+            seeds_(seeds), has_seeds_(seeds > 0),
+            has_cards_slot_(card_slot),
+            action_(NULL) {
+                if (has_seeds_)
+                    seed_positions_ = new Point[seeds_];
+
+                column_positions_ = new Point[columns_];
+            };
 
         void MouseMove(const Point &p) { if (action_) action_->MouseMove(p); }
         void PressButton(const Point &p) { if (action_) action_->PressButton(p); }
@@ -92,18 +104,31 @@ class Renderer
 		void KeyRelease(char key) { if (action_) action_->KeyRelease(key); }
         int GetPosition(const Point &p);
         std::pair<int,int> GetRowInfo() { return std::make_pair(column_positions_[0].Y(), card_size_.Y() ); }
-        virtual ~Renderer() {};
+        virtual ~Renderer() {
+            if (has_seeds_)
+                delete [] seed_positions_;
+
+            delete [] column_positions_;
+        };
+
+        int Seeds() const { return seeds_; }
+        int Columns() const { return columns_; }
 
     protected:
         Rect widget_positions_[WIDGET_NUM];
         Point deck_position_;
         Point cards_position_;
         Point card_size_;
-        Point seed_positions_[TOTAL_SEEDS];
-        Point column_positions_[COLUMNS];
+        Point *seed_positions_;
+        Point *column_positions_;
         Point screen_size_;
         double scaling_;
     private:
+        int seeds_;
+        int columns_;
+        bool has_seeds_;
+        bool has_cards_slot_;
+
 		bool inside(const Point &p, const Point &orig, const Point &size)
 		{
 			return (p.X() >= (orig.X() - card_size_.X()/3) && 
