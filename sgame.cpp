@@ -28,8 +28,9 @@ Update()
             card.Covered(cards < 44);
 
             rows_[i].Add(card);
+        	
+	    cards++;
         }
-        cards++;
     }
 
     for (int i = 0; i < SPIDER_COLUMNS; i++)
