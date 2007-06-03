@@ -36,7 +36,6 @@ class KlondikeGame : public Game
     void PressButton(const Point &);
     void ReleaseButton(const Point &);
     void DoubleClick(const Point &);
-	void KeyRelease(char key);
 	void AutoComplete();
     void Update();
     void Victory();

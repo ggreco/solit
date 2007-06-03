@@ -28,12 +28,14 @@ class SpiderGame : public Game
 {
     SpiderRow  rows_[SPIDER_COLUMNS];
 
+	Stackable used_;
+
     void PressButton(const Point &);
     void ReleaseButton(const Point &);
-	void KeyRelease(char key);
     bool IsCompleted();
     void Restart();
     void Update();
+	void Victory();
 public:
     SpiderGame(int id);
 };

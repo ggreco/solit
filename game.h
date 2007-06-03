@@ -72,6 +72,14 @@ public:
 class Game : public ActionManager
 {
 protected:
+	
+	typedef struct
+	{
+	    int x;
+		int y;
+	} PosData;
+	
+
     enum StatusValue {PLAYING, PLAYING_VICTORY, AUTOCOMPLETE};
 
     StatusValue status_;
@@ -87,11 +95,14 @@ protected:
     virtual void DoubleClick(const Point &p) {}
     void UndoMove();
 	virtual void ReleaseButton(const Point &);
+	virtual void KeyRelease(char);
+
+	static PosData data_[];
 public:
 
     Renderer *Rend() { return rend_; }
     virtual void Restart();
-   	void Victory();
+   	void Victory(Stackable &, int, int);
     virtual void Update() = 0;
     Game(int rend_id, int columns, int seeds = -1, bool card_slot = false);
     virtual ~Game() {};
