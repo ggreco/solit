@@ -7,11 +7,26 @@
 #define SPIDER_TOTAL_DECKS 2
 #define SPIDER_TOTAL_SEEDS (SPIDER_TOTAL_DECKS * 4)
 
+class SpiderRow : public Row
+{
+public:
+        bool CanGet(const Card &c) 
+        {
+            if (Empty())
+                return (true);
+
+            if (Get().Covered())
+                return false;
+
+            return (Get().Value() == (c.Value() + 1));
+        }
+
+		bool Completed();
+};
+
 class SpiderGame : public Game
 {
-    Deck deck_;
-
-    Row  rows_[SPIDER_COLUMNS];
+    SpiderRow  rows_[SPIDER_COLUMNS];
 
     void PressButton(const Point &);
     void ReleaseButton(const Point &);

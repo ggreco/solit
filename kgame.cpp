@@ -362,21 +362,6 @@ ReleaseButton(const Point &p)
             rend_->Draw(cards_, Renderer::CardPos);
             rend_->Draw(deck_, Renderer::DeckPos);
         }
-        else if (pos >= Renderer::FirstWidget && pos <= Renderer::LastWidget) {
-            pos -= Renderer::FirstWidget;
-
-            switch (pos) {
-                case QUIT_GAME:
-                    exit(0);
-                    break;
-                case UNDO_MOVE:
-                    UndoMove();
-                    break;
-                case NEW_GAME:
-                    Restart();
-                    break;
-            }
-        }
         else if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
             int p = pos - Renderer::FirstRow;
             if (!rows_[p].Empty()) {
@@ -387,6 +372,8 @@ ReleaseButton(const Point &p)
                 }
             }
         }
+		else
+			Game::ReleaseButton(p);
     }
 
     rend_->Update();

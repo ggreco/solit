@@ -2,6 +2,7 @@
 #include "lowres_renderer.h"
 #include "deck.h"
 #include <iostream>
+#include "time.h"
 
 Game::Game(int id, int cols, int seeds, bool card_slot ) :
     deck_(2), status_(PLAYING)
@@ -35,6 +36,28 @@ MouseMove(const Point &p)
 
         rend_->Update();
     }
+}
+
+void Game::
+ReleaseButton(const Point &p)
+{
+	int pos = rend_->GetPosition(p);
+
+	if (pos >= Renderer::FirstWidget && pos <= Renderer::LastWidget) {
+            pos -= Renderer::FirstWidget;
+
+            switch (pos) {
+                case QUIT_GAME:
+                    exit(0);
+                    break;
+                case UNDO_MOVE:
+                    UndoMove();
+                    break;
+                case NEW_GAME:
+                    Restart();
+                    break;
+            }
+	}
 }
 
 void Game::

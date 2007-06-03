@@ -84,12 +84,13 @@ protected:
 
     void MouseMove(const Point &);
 	void KeyPress(char key) {}
-    void DoubleClick(const Point &p) {}
+    virtual void DoubleClick(const Point &p) {}
     void UndoMove();
+	virtual void ReleaseButton(const Point &);
 public:
 
     Renderer *Rend() { return rend_; }
-    void Restart();
+    virtual void Restart();
    	void Victory();
     virtual void Update() = 0;
     Game(int rend_id, int columns, int seeds = -1, bool card_slot = false);

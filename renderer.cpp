@@ -54,15 +54,24 @@ Move(const Card &c, int pos)
             break;
     }
 }
+
 int Renderer::
 GetPosition(const Point &p)
 {
     if (inside(p, deck_position_, card_size_))
         return DeckPos;
-    else if (inside(p, cards_position_, card_size_))
+    else if (has_cards_slot_ && inside(p, cards_position_, card_size_))
         return CardPos;
     else { 
 		int i;
+
+        for (i = 0; i < WIDGET_NUM; ++i) {
+            if (!widget_positions_[i].width())
+                continue; // skip unavailable widgets
+
+            if (widget_positions_[i].inside(p))
+                return FirstWidget + i;
+        }
 
         for (i = 0; i < Seeds(); ++i)
             if (inside(p, seed_positions_[i], card_size_))
@@ -73,13 +82,7 @@ GetPosition(const Point &p)
                 return FirstRow + i;
         }
 
-        for (i = 0; i < WIDGET_NUM; ++i) {
-            if (!widget_positions_[i].width())
-                continue; // skip unavailable widgets
 
-            if (widget_positions_[i].inside(p))
-                return FirstWidget + i;
-        }
     }
 
     return -1;

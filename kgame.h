@@ -8,11 +8,28 @@
 
 #include "game.h"
 
+class KlondikeRow : public Row
+{
+public:
+        bool CanGet(const Card &c) 
+        {
+            if (Empty())
+                return (c.Value() == 13);
+
+            if (Get().Covered())
+                return false;
+
+            return (((Get().IsBlack() && c.IsRed()) ||
+                     (Get().IsRed() && c.IsBlack()) ) &&
+                      Get().Value() == (c.Value() + 1));
+        }
+};
+
 class KlondikeGame : public Game
 {
 
     Stackable cards_;
-    Row  rows_[KLONDIKE_COLUMNS];
+    KlondikeRow  rows_[KLONDIKE_COLUMNS];
     Seed seeds_[KLONDIKE_TOTAL_SEEDS];
     bool IsCompleted();
 
