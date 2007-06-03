@@ -131,7 +131,11 @@ ReleaseButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
 	
-	if (!selection_.Empty()) {
+    if (status_ == PLAYING_VICTORY) {
+        Game::ReleaseButton(p);
+		return;
+	}
+    else if (!selection_.Empty()) {
 		rend_->Clear(selection_.Get());
 
         if (selection_.Size() > 1)
@@ -152,6 +156,7 @@ ReleaseButton(const Point &p)
 			if (r.Completed()) {
 				for (int i = 0; i < 13; i++) {
 					rend_->Clear(r.Get());
+					used_.Add(r.Get());
 					// XXX aggiungere gestione mossa
 					r.Remove();
 				}
@@ -204,10 +209,19 @@ ReleaseButton(const Point &p)
     }
 
     rend_->Update();
+
+	if (IsCompleted())
+		Victory();
 }
 
 void SpiderGame::
-KeyRelease(char key)
+Victory()
 {
+    moves_.Clear(); // to avoid crashes if one uses undo
+	rend_->Clear();
+    status_ = PLAYING_VICTORY;	
+	
+	Game::Victory(used_, 2, 50);
 }
+
 

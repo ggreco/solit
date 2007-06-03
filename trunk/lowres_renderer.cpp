@@ -6,7 +6,7 @@
 ResInfo res[] = {
     {320, 240, 20, 30, 2, 2, 8, 8, 1.0, "low"},
     {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"},
-    {240, 320, 20, 30, 2, 2, 8, 8, 1.0, "low"},
+    {240, 320, 20, 30, 3, 2, 8, 8, 1.0, "low"},
     {480, 640, 40, 60, 7, 4, 13, 16, 2.0, "med"},
 };
 
@@ -230,7 +230,7 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
         deck_position_ = Point(res_.spacing_x, screen_->h - res_.card_height - res_.spacing_y );
 
         for (i = 0; i < Columns(); i++) 
-            column_positions_[i] = Point(res_.spacing_x + 
+            column_positions_[i] = Point(1 + res_.spacing_x + 
                     i * (card_size_.X() + res_.spacing_x),
                     res_.spacing_y);
 

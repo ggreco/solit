@@ -36,24 +36,6 @@ SeedsFull()
 	return (total == (13 * KLONDIKE_TOTAL_SEEDS));
 }
 
-typedef struct
-{
-    int x;
-    int y;
-} posdata;
-
-posdata data[] = 
-{
-    {0 , 0}, {40, 0}, {10, 15}, {30, 15}, {20, 40}, {20,60}, // Y
-    {90, 0}, {110, 0}, {80, 20}, {120,20}, {80, 40}, {120, 40}, {90, 60}, {110, 60}, // O
-    {160, 0}, {205, 0}, {160, 20}, {205,20}, {160, 40}, {205, 40}, {175, 60}, {190, 60}, // U
-    {0 , 100}, {60, 100}, {5, 130}, {55, 130}, {10,160}, {50, 160},  {25, 145}, {40, 145}, // W
-    {100 , 100}, {100, 130}, {100, 160}, // I
-    {140 , 100}, {140, 130}, {140, 160},  {180 , 100}, {180, 130}, {180, 160}, {155, 120}, {165, 140}, // N
-    {220, 100}, {220, 120}, {220, 160}, // !
-    {-1, -1}
-};
-
 void KlondikeGame::Victory()
 {
     moves_.Clear(); // to avoid crashes if one uses undo
@@ -66,13 +48,13 @@ void KlondikeGame::Victory()
 
     int x_offset = 20, y_offset = 40;
 
-    while (data[idx].x >= 0 ) {
+    while (data_[idx].x >= 0 ) {
             deck++;
 
             if (deck == KLONDIKE_TOTAL_SEEDS)
                 deck = 0;
 
-    	    rend_->Move(seeds_[deck].Get(), Point(data[idx].x + x_offset, data[idx].y + y_offset));
+    	    rend_->Move(seeds_[deck].Get(), Point(data_[idx].x + x_offset, data_[idx].y + y_offset));
 
             used.Add(seeds_[deck].Get());
 
@@ -88,36 +70,7 @@ void KlondikeGame::Victory()
             idx++;
     }
 
-    bool flag = true;
-
-    for (;;) {
-        idx = 0;
-        CardIterator it = used.GetCards().begin();
-
-        while (data[idx].x >= 0 ) {
-            it->Covered(flag);
-    	    rend_->Move(*it, Point(data[idx].x + x_offset, data[idx].y + y_offset));
-
-            idx++;
-            it++;
-
-            int i = 0;
-
-            while (i < 4) {
-                rend_->Poll();
-
-                if (status_ == PLAYING)
-                    return;
-
-                rend_->Delay(20);
-                i++;
-            }
-
-    	    rend_->Update();
-        }
-
-        flag = !flag;
-    }
+	Game::Victory(used, x_offset, y_offset);
 }
 
 void KlondikeGame::
@@ -167,54 +120,6 @@ IsCompleted()
     }
 
     return false;
-}
-
-
-void KlondikeGame::
-KeyRelease(char key)
-{
-	switch(key) {
-		case 'a':
-            if (IsCompleted())
-				AutoComplete();
-
-			break;
-        case 'w':
-			{
-            deck_.Clear();
-
-          	for (int j = 0; j < 2; j++) {
-               for (int i = 1; i < 14; i++) {
-                    Card c1(i, Hearts, j);
-                    Card c2(i, Squares, j);
-                    Card c3(i, Pikes, j);
-                    Card c4(i, Flowers, j);
-
-                    c1.Covered(false);
-                    c2.Covered(false);
-                    c3.Covered(false);
-                    c4.Covered(false);
-
-                    seeds_[j * 4].Add(c1); 
-                    seeds_[1 + j * 4].Add(c2); 
-                    seeds_[2 + j * 4].Add(c3); 
-                    seeds_[3 + j * 4].Add(c4);
-
-                    for (int k = 0; k < KLONDIKE_TOTAL_SEEDS; ++k)
-                        rend_->Draw(seeds_[k], Renderer::FirstSeedPos + k);
-                }
-            }
-
-            Victory();
-			}
-            break;
-		case 'q':
-			exit(0);
-			break;
-		case 'n':
-			Restart();
-			break;
-	}
 }
 
 void KlondikeGame::
@@ -276,16 +181,8 @@ ReleaseButton(const Point &p)
     int pos = rend_->GetPosition(p);
 
     if (status_ == PLAYING_VICTORY || status_ == AUTOCOMPLETE) {
-        pos -= Renderer::FirstWidget;
-
-        switch (pos) {
-            case QUIT_GAME:
-                exit(0);
-                break;
-            case NEW_GAME:
-                Restart();
-                break;
-        }
+        Game::ReleaseButton(p);
+		return;
     }
     else if (!selection_.Empty()) {
 
