@@ -5,6 +5,7 @@
 #include <string>
 
 enum SeedValue {Hearts, Squares, Flowers, Pikes};
+enum CardColor {Red, Black};
 
 class Card
 {
@@ -17,6 +18,7 @@ public:
         value_(val), seed_(seed), deck_(deck), covered_(true) {}
     bool IsRed() const { return (seed_ == Hearts || seed_ == Squares); };
     bool IsBlack() const { return !IsRed(); }
+	CardColor Color() const { return ( (seed_ == Hearts || seed_ == Squares) ? Red : Black); }
     int Value() const { return value_; }
     SeedValue Seed() const { return seed_; }
     bool Covered() const { return covered_; }

@@ -7,7 +7,7 @@ ResInfo res[] = {
     {320, 240, 20, 30, 2, 2, 8, 8, 1.0, "low"},
     {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"},
     {240, 320, 20, 30, 2, 2, 8, 8, 1.0, "low"},
-    {480, 640, 40, 60, 4, 4, 13, 16, 2.0, "med"},
+    {480, 640, 40, 60, 7, 4, 13, 16, 2.0, "med"},
 };
 
 void SdlRenderer::
@@ -232,7 +232,7 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
         for (i = 0; i < Columns(); i++) 
             column_positions_[i] = Point(res_.spacing_x + 
                     i * (card_size_.X() + res_.spacing_x),
-                    deck_position_.Y() + res_.spacing_y * 2 + card_size_.Y());
+                    res_.spacing_y);
 
         widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w - res_.spacing_x, 
                 screen_->h - widgets_[QUIT_GAME]->h - res_.spacing_y,

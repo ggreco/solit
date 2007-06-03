@@ -18,18 +18,6 @@ class Row : public Stackable
 
 			return c;
 		}
-        bool CanGet(const Card &c) 
-        {
-            if (Empty())
-                return (c.Value() == 13);
-
-            if (Get().Covered())
-                return false;
-
-            return (((Get().IsBlack() && c.IsRed()) ||
-                     (Get().IsRed() && c.IsBlack()) ) &&
-                      Get().Value() == (c.Value() + 1));
-        }
 };
 
 #endif
