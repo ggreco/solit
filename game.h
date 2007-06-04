@@ -8,6 +8,7 @@
 #include "renderer.h"
 #include "action.h"
 #include <stack>
+#include <map>
 
 class Renderer;
 class Point;
@@ -33,12 +34,14 @@ public:
     Stackable *dest;
     int dest_pos;
     Stackable cards;
+    int linked;
 
     Move(Stackable *from, int srcpos, 
          Stackable *to = NULL,  int destpos = 0, 
-         const Stackable *c = NULL) :
+         const Stackable *c = NULL, int link = -1) :
          source(from), source_pos(srcpos),
-         dest(to), dest_pos(destpos) 
+         dest(to), dest_pos(destpos),
+         linked(link)
          {
              if (c)
                  cards = *c;
@@ -52,22 +55,25 @@ public:
 
     void Revert(Renderer *);
 
+    size_t Size() const { return moves_.size(); }
     void Clear() { while(!moves_.empty()) moves_.pop(); }
-    void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Card &c) {
+    void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Card &c, int link = -1) {
         Stackable st;
 
         st.Add(c);
-        moves_.push(Move(&from, srcpos,  &to, destpos, &st));
+        moves_.push(Move(&from, srcpos,  &to, destpos, &st, link));
     }
 
-    void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Stackable &c) {
-        moves_.push(Move(&from, srcpos,  &to, destpos, &c));
+    void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Stackable &c, int link = -1) {
+        moves_.push(Move(&from, srcpos,  &to, destpos, &c, link));
     }
 
     void Add(Row &from, int position) {
         moves_.push(Move(&from, position));
     }
 };
+
+typedef std::map<int, std::pair<int, int> > HighScoreMap;
 
 class Game : public ActionManager
 {
@@ -88,6 +94,10 @@ protected:
     Selection selection_;
     Deck deck_;
 
+    static int game_id_;
+
+    static HighScoreMap scores_;
+
     virtual bool IsCompleted() = 0;
 
     void MouseMove(const Point &);
@@ -106,6 +116,10 @@ public:
     virtual void Update() = 0;
     Game(int rend_id, int columns, int seeds = -1, bool card_slot = false);
     virtual ~Game() {};
+
+    static void update_scores();
+    void check_scores();
+    void read_scores();
 };
 
 #endif

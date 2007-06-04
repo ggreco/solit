@@ -16,9 +16,50 @@ Game::PosData Game::data_[] =
     {-1, -1}
 };
 
+HighScoreMap Game::scores_;
+int Game::game_id_ = -1;
+
+void Game::update_scores()
+{
+    if (game_id_ != -1) {
+        std::cerr << "Updating highscores\n";
+
+        if (FILE *hs = fopen(".scores", "w")) {
+            for (HighScoreMap::iterator it = scores_.begin();
+                    it != scores_.end(); ++it) {
+                fprintf(hs, "%08d %08d %08d\n", it->first, it->second.first, 
+                                                     it->second.second);
+            }
+            fclose(hs);
+        }
+    }
+}
+
+void Game::read_scores()
+{
+    if (FILE *hs = fopen(".scores", "r")) {
+        int a, b, c;
+
+        while(fscanf(hs, "%d %d %d\n", &a, &b, &c) == 3)
+            scores_[a] = std::pair<int, int>(b, c);
+       
+        fclose(hs);
+    }
+    else { // init scores to 0
+        for (int i = 0; i < 4; i++)
+            scores_[i] = std::pair<int, int>(0, 0);
+    }
+
+    atexit(update_scores);
+}
+
 Game::Game(int id, int cols, int seeds, bool card_slot ) :
     deck_(2), status_(PLAYING)
 {
+    game_id_ = id;
+
+    read_scores();
+
     rend_ = new SdlRenderer(id, cols, seeds, card_slot);
 
     srand(time(NULL));
@@ -85,6 +126,7 @@ KeyRelease(char key)
 			}
             break;
 		case 'q':
+            check_scores();
 			exit(0);
 			break;
 		case 'n':
@@ -119,6 +161,7 @@ ReleaseButton(const Point &p)
 
             switch (pos) {
                 case QUIT_GAME:
+                    check_scores();
                     exit(0);
                     break;
                 case UNDO_MOVE:
@@ -139,8 +182,21 @@ UndoMove()
 }
 
 void Game::
+check_scores()
+{
+    if (status_ == PLAYING_VICTORY)
+        scores_[game_id_ / 2].first++;
+    else if (moves_.Size())
+        scores_[game_id_ / 2].second++;
+
+    update_scores();
+}
+
+void Game::
 Restart()
 {
+    check_scores();
+
     moves_.Clear();
 
 	rend_->Clear();
@@ -153,3 +209,42 @@ Restart()
 
     status_ = PLAYING;
 }
+
+void MoveList::
+Revert(Renderer *rend)
+{
+    if (moves_.empty())
+        return;
+
+    Move &last = moves_.top();
+
+    int linked = last.linked;
+
+    if (!last.dest) {
+        last.source->Get().Covered(true);
+        rend->Draw(*last.source, last.source_pos);
+
+    }
+    else {
+        for (RevCardIterator it = last.cards.GetCards().rbegin(); 
+                      it != last.cards.GetCards().rend(); ++it)
+           rend->Clear(*it);
+        
+        while (last.cards.Size()) {
+            last.source->Add(last.cards.First());
+            last.dest->Remove();
+            last.cards.RemoveFirst();
+        }
+
+        rend->Draw(*last.source, last.source_pos);
+        rend->Draw(*last.dest, last.dest_pos);
+    }
+
+    moves_.pop();
+
+    if (linked != -1 && !moves_.empty() &&
+        moves_.top().linked == linked) {
+        Revert(rend);
+    }
+}
+

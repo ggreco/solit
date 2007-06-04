@@ -193,63 +193,12 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
     SDL_Rect r = { 0, 0, screen_->w, screen_->h};
     SDL_SetClipRect(screen_, &r);
 
-    if (type < 2) { // XXX this should be done by the game
-
-        widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w, 0,
-                widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
-        widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w, 
-                screen_->h - widgets_[NEW_GAME]->h,
-                widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
-        widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w, 
-                (screen_->h - widgets_[UNDO_MOVE]->h) / 2,
-                widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
-
-        deck_position_ = Point(res_.spacing_x / 2, res_.spacing_y / 2);
-        card_size_ = Point(res_.card_width, 
+    card_size_ = Point(res_.card_width, 
                 res_.card_height);
 
-        cards_position_ = Point(deck_position_.X() + card_size_.X() + res_.spacing_x,
-                deck_position_.Y());
-
-        for (i = 0; i < Seeds(); i++) {
-            seed_positions_[i] = Point(cards_position_.X() + res_.spacing_x + 
-                    (i + 2) * (card_size_.X() + res_.spacing_x),
-                    deck_position_.Y());
-        }
-
-        for (i = 0; i < Columns(); i++) {
-            column_positions_[i] = Point(deck_position_.X() + 
-                    i * (card_size_.X() + res_.spacing_x),
-                    deck_position_.Y() + res_.spacing_y * 2 + card_size_.Y());
-        }
-    }
-    else {
-        card_size_ = Point(res_.card_width, 
-                res_.card_height);
-
-        deck_position_ = Point(res_.spacing_x, screen_->h - res_.card_height - res_.spacing_y );
-
-        for (i = 0; i < Columns(); i++) 
-            column_positions_[i] = Point(1 + res_.spacing_x + 
-                    i * (card_size_.X() + res_.spacing_x),
-                    res_.spacing_y);
-
-        widget_positions_[QUIT_GAME].set(screen_->w - widgets_[QUIT_GAME]->w - res_.spacing_x, 
-                screen_->h - widgets_[QUIT_GAME]->h - res_.spacing_y,
-                widgets_[QUIT_GAME]->w, widgets_[QUIT_GAME]->h);
-
-        widget_positions_[NEW_GAME].set(screen_->w - widgets_[NEW_GAME]->w * 2 - res_.spacing_x * 2, 
-                screen_->h - widgets_[NEW_GAME]->h - res_.spacing_y,
-                widgets_[NEW_GAME]->w, widgets_[NEW_GAME]->h);
-
-        widget_positions_[UNDO_MOVE].set(screen_->w - widgets_[UNDO_MOVE]->w * 3 - res_.spacing_x * 3, 
-                screen_->h - widgets_[UNDO_MOVE]->h - res_.spacing_y,
-                widgets_[UNDO_MOVE]->w, widgets_[UNDO_MOVE]->h);
-    }
+    spacing_ = Point(res_.spacing_x, res_.spacing_y);
 
     card_rend_.Optimize();
-
-	Clear();
 }
 
 SdlCardRenderer::

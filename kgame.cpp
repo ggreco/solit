@@ -8,7 +8,47 @@ KlondikeGame::
 KlondikeGame(int res) :
     Game(res, KLONDIKE_COLUMNS, KLONDIKE_TOTAL_SEEDS, true)
 {
-	Update();
+    rend_->PositionWidget(QUIT_GAME, 
+            Point(rend_->ScreenWidth() - 
+                rend_->WidgetWidth(QUIT_GAME), 0)
+            );
+
+    rend_->PositionWidget(NEW_GAME, 
+            Point(rend_->ScreenWidth() - rend_->WidgetWidth(NEW_GAME), 
+                rend_->ScreenHeight() - rend_->WidgetHeight(NEW_GAME))
+            );
+
+    rend_->PositionWidget(UNDO_MOVE, 
+            Point(rend_->ScreenWidth() - rend_->WidgetWidth(UNDO_MOVE), 
+                (rend_->ScreenHeight() - rend_->WidgetHeight(UNDO_MOVE)) / 2)
+            );
+
+    Point pos(rend_->Spacing().X() / 2, rend_->Spacing().Y() / 2);
+    Point displacement(rend_->CardSize().X() + rend_->Spacing().X(), 0);
+    rend_->PositionDeck(pos);
+
+    pos += displacement;
+    rend_->PositionCards(pos);
+
+    pos.AddX(rend_->Spacing().X());
+
+    pos += displacement;
+    pos += displacement;
+
+    for (int i = 0; i < rend_->Seeds(); i++) {
+        rend_->PositionSeed(i, pos);
+        pos += displacement;
+    }
+
+    pos.set(rend_->Spacing().X() / 2, rend_->Spacing().Y() * 5 / 2 + rend_->CardSize().Y());
+
+    for (int i = 0; i < rend_->Columns(); i++) {
+        rend_->PositionColumn(i, pos);
+        pos += displacement;
+    }
+
+    rend_->Clear();
+    Update();
 }
 
 void KlondikeGame::
@@ -340,34 +380,4 @@ void KlondikeGame::Update()
         rend_->Draw(seeds_[k], Renderer::FirstSeedPos + k);
 }
 
-void MoveList::
-Revert(Renderer *rend)
-{
-    if (moves_.empty())
-        return;
-
-    Move &last = moves_.top();
-
-    if (!last.dest) {
-        last.source->Get().Covered(true);
-        rend->Draw(*last.source, last.source_pos);
-
-    }
-    else {
-        for (RevCardIterator it = last.cards.GetCards().rbegin(); 
-                      it != last.cards.GetCards().rend(); ++it)
-           rend->Clear(*it);
-        
-        while (last.cards.Size()) {
-            last.source->Add(last.cards.First());
-            last.dest->Remove();
-            last.cards.RemoveFirst();
-        }
-
-        rend->Draw(*last.source, last.source_pos);
-        rend->Draw(*last.dest, last.dest_pos);
-    }
-
-    moves_.pop();
-}
 
