@@ -88,6 +88,11 @@ class SdlRenderer : public Renderer
         CardRenderer *GetCardRenderer() { return &card_rend_; }
 
 		SDL_Surface *load_image(const std::string &);
+
+        size_t WidgetWidth(WidgetId id) const { return widgets_[id]->w; }
+        size_t WidgetHeight(WidgetId id) const { return widgets_[id]->h; }
+        size_t ScreenWidth() const { return screen_->w; }
+        size_t ScreenHeight() const { return screen_->h; }
 };
 
 #endif

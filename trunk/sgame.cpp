@@ -4,6 +4,32 @@ SpiderGame::
 SpiderGame(int res) :
     Game(res + 2, SPIDER_COLUMNS)
 {
+    Point pos(rend_->Spacing().X(), 
+            rend_->ScreenHeight() - rend_->CardSize().Y() - rend_->Spacing().Y());
+
+    rend_->PositionDeck(pos);
+
+    pos.Y(rend_->Spacing().Y());
+
+    for (int i = 0; i < rend_->Columns(); i++) {
+        rend_->PositionColumn(i, pos); 
+        pos.AddX(rend_->CardSize().X() + rend_->Spacing().X());
+    }
+    
+    
+    pos.set(rend_->ScreenWidth() - rend_->WidgetWidth(QUIT_GAME) - rend_->Spacing().X(),
+            rend_->ScreenHeight() - rend_->WidgetHeight(QUIT_GAME) - rend_->Spacing().Y());
+
+    rend_->PositionWidget(QUIT_GAME, pos);
+
+    pos.AddX(-rend_->WidgetWidth(NEW_GAME) - rend_->Spacing().X() * 2);
+    rend_->PositionWidget(NEW_GAME, pos);
+
+    pos.AddX(-rend_->WidgetWidth(UNDO_MOVE) - rend_->Spacing().X() * 2);
+    rend_->PositionWidget(UNDO_MOVE, pos);
+
+    rend_->Clear();
+
     Update();
 }
 
@@ -154,12 +180,16 @@ ReleaseButton(const Point &p)
             }
 
 			if (r.Completed()) {
+                Stackable temp;
+
 				for (int i = 0; i < 13; i++) {
 					rend_->Clear(r.Get());
 					used_.Add(r.Get());
-					// XXX aggiungere gestione mossa
+                    temp.Add(r.Get());
 					r.Remove();
 				}
+                moves_.Add(r, pos - Renderer::FirstRow, used_, 
+                        Renderer::Discarded, temp);
 			}
 
             rend_->Draw(r, pos - Renderer::FirstRow);
@@ -176,12 +206,14 @@ ReleaseButton(const Point &p)
 
         if (pos == Renderer::DeckPos) {
             if (!deck_.Empty()) {
+                int linked = rand(); // moves are only a single undo level
+
 				for (int i = 0; i < SPIDER_COLUMNS; ++i) {
 					Card c = deck_.GetCard();
 				
 					moves_.Add(deck_, Renderer::DeckPos,
                               rows_[i], Renderer::FirstRow + i, 
-                              c);
+                              c, linked);
 
 		            c.Covered(false);
 					rows_[i].Add(c);

@@ -19,10 +19,13 @@ public:
     int X() const { return x_; }
     int Y() const { return y_; }
     void X(int v) { x_ = v; }
+    void AddX(int v) { x_ += v; }
+    void AddY(int v) { y_ += v; }
     void Y(int v) { y_ = v; }
     void set(int x, int y) { x_ = x; y_ = y; }
     Point & operator+(const Point &p) { x_ += p.x_; y_ += p.y_; return *this; }
     Point & operator-(const Point &p) { x_ -= p.x_; y_ -= p.y_; return *this; }
+    void operator+=(Point &p) { x_ += p.x_; y_ += p.y_; }
     bool operator==(Point &p) { return (x_ == p.x_ && y_ == p.y_); }
 };
 
@@ -54,7 +57,7 @@ class CardRenderer
         virtual void Clear(const Card &) = 0;
 };
 
-enum Widgets {NEW_GAME, QUIT_GAME, UNDO_MOVE, HIGHSCORE, WIDGET_NUM};
+enum WidgetId {NEW_GAME, QUIT_GAME, UNDO_MOVE, HIGHSCORE, WIDGET_NUM};
 
 #define MAX_TOTAL_SEEDS 24
 #define MAX_TOTAL_COLUMNS 32
@@ -65,7 +68,25 @@ class Renderer
         enum {DeckPos = 0 , CardPos = 1, FirstSeedPos = 2, 
              LastSeedPos = (FirstSeedPos + MAX_TOTAL_SEEDS - 1), 
              FirstRow , LastRow = (FirstRow + MAX_TOTAL_COLUMNS - 1), 
-             FirstWidget, LastWidget = (FirstWidget + WIDGET_NUM -1 )};
+             FirstWidget, LastWidget = (FirstWidget + WIDGET_NUM -1 ),
+             Discarded};
+
+        virtual size_t WidgetWidth(WidgetId) const = 0;
+        virtual size_t WidgetHeight(WidgetId) const = 0;
+        size_t ScreenWidth() const { return screen_size_.X(); }
+        size_t ScreenHeight() const { return screen_size_.Y(); }
+
+        const Point &CardSize() const { return card_size_; }
+        const Point &Spacing() const { return spacing_; }
+        void PositionWidget(WidgetId id, const Point &p) {
+            widget_positions_[id].set(p.X(), p.Y(),
+                    WidgetWidth(id), WidgetHeight(id));
+        }
+        void PositionCards(const Point &p) { cards_position_ = p; }
+        void PositionSeed(int id, const Point &p) { seed_positions_[id] = p; }
+        void PositionColumn(int id, const Point &p) { column_positions_[id] = p; }
+        void PositionDeck(const Point &p) { deck_position_ = p; }
+        
         virtual void Poll() = 0;
         virtual void Delay(int) = 0;
         virtual bool Wait() = 0;
@@ -122,6 +143,7 @@ class Renderer
         Point *seed_positions_;
         Point *column_positions_;
         Point screen_size_;
+        Point spacing_;
         double scaling_;
     private:
         int seeds_;
