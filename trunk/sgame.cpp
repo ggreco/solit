@@ -184,11 +184,11 @@ ReleaseButton(const Point &p)
 
 				for (int i = 0; i < 13; i++) {
 					rend_->Clear(r.Get());
-					used_.Add(r.Get());
-                    temp.Add(r.Get());
+					used_.AddFirst(r.Get());
+                    temp.AddFirst(r.Get());
 					r.Remove();
 				}
-                moves_.Add(r, pos - Renderer::FirstRow, used_, 
+                moves_.Add(r, pos, used_, 
                         Renderer::Discarded, temp);
 			}
 

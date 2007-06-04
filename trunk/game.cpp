@@ -237,7 +237,9 @@ Revert(Renderer *rend)
         }
 
         rend->Draw(*last.source, last.source_pos);
-        rend->Draw(*last.dest, last.dest_pos);
+
+        if (last.dest_pos != Renderer::Discarded)
+            rend->Draw(*last.dest, last.dest_pos);
     }
 
     moves_.pop();
