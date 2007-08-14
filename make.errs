@@ -1,3 +1,0 @@
-g++ -g `sdl-config --cflags`   -c -o sgame.o sgame.cpp
-g++ -o solit main.o lowres_renderer.o deck.o game.o renderer.o card.o images.o sgame.o kgame.o `sdl-config --libs`
-
