@@ -38,6 +38,7 @@ class KlondikeGame : public Game
     void DoubleClick(const Point &);
 	void AutoComplete();
     void Update();
+    void SetupCards();
     void Victory();
     void Restart();
 	bool SeedsFull();

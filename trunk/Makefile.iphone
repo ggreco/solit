@@ -1,0 +1,30 @@
+OBJS = main.o lowres_renderer.o deck.o game.o renderer.o card.o \
+       images.o sgame.o kgame.o 
+
+SDK=/home/gabry/no-backup/iphone/sdks/iPhoneOS3.1.3.sdk
+CROSSDIR=/home/gabry/no-backup/iphone/toolchain/pre/bin/
+CXX=$(CROSSDIR)/arm-apple-darwin9-g++
+
+LDFLAGS = -L/home/gabry/no-backup/SDL-iphone/lib -lSDLiPhoneOS -bind_at_load \
+          -framework Foundation -framework CoreFoundation -framework UIKit \
+          -framework OpenGLES -framework AudioToolbox -framework CoreAudio \
+          -framework CoreGraphics -framework QuartzCore
+          
+
+CXXFLAGS = -g -I/home/gabry/no-backup/SDL-iphone/include -DXIPHONE
+TARGET = solit
+
+all: $(TARGET)
+
+bundle: $(TARGET)
+	@mkdir -p Solit.app
+	@cp $(TARGET) Solit.app/Solit_
+	@cp icon.png Solit.app
+	@cp Info.plist Solit.app
+	@cp solit.sh Solit.app/Solit
+
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+
+clean:
+	rm -fr *.o $(TARGET) Solit.app

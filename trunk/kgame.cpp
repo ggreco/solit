@@ -47,8 +47,24 @@ KlondikeGame(int res) :
         pos += displacement;
     }
 
-    rend_->Clear();
-    Update();
+    SetupCards();
+    Update(); 
+    rend_->Update();
+}
+
+void KlondikeGame::
+SetupCards()
+{
+    for (int i = 0; i < KLONDIKE_COLUMNS; i++) {
+        for (int j = 0; j <= i; j++) {
+            Card card = deck_.GetCard();
+            
+            if (j == i)
+                card.Covered(false);
+
+            rows_[i].Add(card);
+        }
+    }
 }
 
 void KlondikeGame::
@@ -186,10 +202,11 @@ PressButton(const Point &p)
                 if (r.Get().Covered())
                     break;
 
-                rend_->Clear(r.Get());
                 selection_.AddFirst(r.GetCard(), r, pos);
                 toget--;
             }
+
+            Update();
 
             rend_->Draw(selection_.First(), p);
 
@@ -201,6 +218,7 @@ PressButton(const Point &p)
         if (!seeds_[pos - Renderer::FirstSeedPos].Empty()) {
             selection_.Add(seeds_[pos - Renderer::FirstSeedPos].Get(), seeds_[pos - Renderer::FirstSeedPos], pos);
             seeds_[pos - Renderer::FirstSeedPos].Remove();
+            Update();
             rend_->Draw(selection_.Get(), p);
         }
     }
@@ -208,6 +226,7 @@ PressButton(const Point &p)
         if (!cards_.Empty()) {
             selection_.Add(cards_.Get(), cards_, pos);
             cards_.Remove();
+            Update();
             rend_->Draw(selection_.Get(), p);
         }
     }
@@ -225,12 +244,6 @@ ReleaseButton(const Point &p)
 		return;
     }
     else if (!selection_.Empty()) {
-
-        rend_->Clear(selection_.Get());
-
-        if (selection_.Size() > 1)
-            rend_->Clear(selection_.First());
-
         if (pos >= Renderer::FirstSeedPos &&
             pos <= Renderer::LastSeedPos &&
             selection_.Size() == 1 &&
@@ -242,7 +255,8 @@ ReleaseButton(const Point &p)
 
             seeds_[pos - Renderer::FirstSeedPos].Add(selection_.Get());
             selection_.Remove();
-            rend_->Draw(seeds_[pos - Renderer::FirstSeedPos], pos);
+            Update();
+//            rend_->Draw(seeds_[pos - Renderer::FirstSeedPos], pos);
 
 		
 			if (SeedsFull()) {
@@ -262,14 +276,16 @@ ReleaseButton(const Point &p)
                 rows_[pos - Renderer::FirstRow].Add(selection_.First());
                 selection_.RemoveFirst();
             }
-            rend_->Draw(rows_[pos - Renderer::FirstRow], pos - Renderer::FirstRow);
+            Update();
+//            rend_->Draw(rows_[pos - Renderer::FirstRow], pos - Renderer::FirstRow);
         }
         else {
             while (!selection_.Empty()) {
                 selection_.Origin()->Add(selection_.First());
                 selection_.RemoveFirst();
             }
-            rend_->Draw(*selection_.Origin(), selection_.OriginPosition());
+//            rend_->Draw(*selection_.Origin(), selection_.OriginPosition());
+            Update();
         }
     }
     else {
@@ -296,8 +312,9 @@ ReleaseButton(const Point &p)
                     deck_.Get().Covered(true);
                 }
             }
-            rend_->Draw(cards_, Renderer::CardPos);
-            rend_->Draw(deck_, Renderer::DeckPos);
+           // rend_->Draw(cards_, Renderer::CardPos);
+           // rend_->Draw(deck_, Renderer::DeckPos);
+            Update();
         }
         else if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
             int p = pos - Renderer::FirstRow;
@@ -305,9 +322,10 @@ ReleaseButton(const Point &p)
                 if (rows_[p].Get().Covered()) {
                     moves_.Add(rows_[p], pos);
                     rows_[p].Get().Covered(false);
-                    rend_->Draw(rows_[p], p);
+//                    rend_->Draw(rows_[p], p);
                 }
             }
+            Update();
         }
 		else
 			Game::ReleaseButton(p);
@@ -343,7 +361,9 @@ DoubleClick(const Point &p)
             seeds_[i].Add(o->Get());
             o->Remove();
 
-            rend_->Draw(seeds_[i], Renderer::FirstSeedPos + i);
+            Update();
+
+//            rend_->Draw(seeds_[i], Renderer::FirstSeedPos + i);
 
             rend_->Update();
 
@@ -360,18 +380,10 @@ DoubleClick(const Point &p)
 
 void KlondikeGame::Update()
 {
-    for (int i = 0; i < KLONDIKE_COLUMNS; i++) {
-        for (int j = 0; j <= i; j++) {
-            Card card = deck_.GetCard();
-            
-            if (j == i)
-                card.Covered(false);
+    rend_->Clear();
 
-            rows_[i].Add(card);
-        }
-
+    for (int i = 0; i < KLONDIKE_COLUMNS; i++) 
         rend_->Draw(rows_[i], i);
-    }
 
     rend_->Draw(deck_, Renderer::DeckPos);
     rend_->Draw(cards_, Renderer::CardPos);

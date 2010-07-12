@@ -1,11 +1,16 @@
 #include "sgame.h"
+#include <stdlib.h>
 
 SpiderGame::
 SpiderGame(int res) :
-    Game(res + 2, SPIDER_COLUMNS)
+    Game(res + SET_NUMBER, SPIDER_COLUMNS)
 {
     Point pos(rend_->Spacing().X(), 
             rend_->ScreenHeight() - rend_->CardSize().Y() - rend_->Spacing().Y());
+
+#ifdef XIPHONE
+    pos.AddY(-20);
+#endif
 
     rend_->PositionDeck(pos);
 
@@ -20,6 +25,10 @@ SpiderGame(int res) :
     pos.set(rend_->ScreenWidth() - rend_->WidgetWidth(QUIT_GAME) - rend_->Spacing().X(),
             rend_->ScreenHeight() - rend_->WidgetHeight(QUIT_GAME) - rend_->Spacing().Y());
 
+#ifdef XIPHONE
+    pos.AddY(-20);
+#endif
+
     rend_->PositionWidget(QUIT_GAME, pos);
 
     pos.AddX(-rend_->WidgetWidth(NEW_GAME) - rend_->Spacing().X() * 2);
@@ -28,22 +37,13 @@ SpiderGame(int res) :
     pos.AddX(-rend_->WidgetWidth(UNDO_MOVE) - rend_->Spacing().X() * 2);
     rend_->PositionWidget(UNDO_MOVE, pos);
 
-    rend_->Clear();
-
+    SetupCards();
     Update();
+    rend_->Update();
 }
 
 void SpiderGame::
-Restart()
-{
-	for (int j = 0; j < rend_->Columns(); j++)
-		rows_[j].Clear();
-
-    Game::Restart();
-}
-
-void SpiderGame::
-Update()
+SetupCards()
 {
     int cards = 0;
 
@@ -61,6 +61,21 @@ Update()
 				break;
         }
     }
+}
+
+void SpiderGame::
+Restart()
+{
+	for (int j = 0; j < rend_->Columns(); j++)
+		rows_[j].Clear();
+
+    Game::Restart();
+}
+
+void SpiderGame::
+Update()
+{
+    rend_->Clear();
 
     for (int i = 0; i < SPIDER_COLUMNS; i++)
         rend_->Draw(rows_[i], i);
@@ -114,10 +129,11 @@ PressButton(const Point &p)
 					)
 					break;
 
-                rend_->Clear(r.Get());
                 selection_.AddFirst(r.GetCard(), r, pos);
                 toget--;
             }
+
+            Update();
 
             rend_->Draw(selection_.First(), p);
 
@@ -162,11 +178,6 @@ ReleaseButton(const Point &p)
 		return;
 	}
     else if (!selection_.Empty()) {
-		rend_->Clear(selection_.Get());
-
-        if (selection_.Size() > 1)
-            rend_->Clear(selection_.First());
-
         if (pos >= Renderer::FirstRow && 
                  pos <= Renderer::LastRow &&
                  rows_[pos - Renderer::FirstRow].CanGet(selection_.First())) {
@@ -183,7 +194,6 @@ ReleaseButton(const Point &p)
                 Stackable temp;
 
 				for (int i = 0; i < 13; i++) {
-					rend_->Clear(r.Get());
 					used_.AddFirst(r.Get());
                     temp.AddFirst(r.Get());
 					r.Remove();
@@ -192,14 +202,14 @@ ReleaseButton(const Point &p)
                         Renderer::Discarded, temp);
 			}
 
-            rend_->Draw(r, pos - Renderer::FirstRow);
+            Update();
         }
         else {
             while (!selection_.Empty()) {
                 selection_.Origin()->Add(selection_.First());
                 selection_.RemoveFirst();
             }
-            rend_->Draw(*selection_.Origin(), selection_.OriginPosition());
+            Update();
         }
 	}
 	else {
@@ -218,12 +228,9 @@ ReleaseButton(const Point &p)
 		            c.Covered(false);
 					rows_[i].Add(c);
 
-                    rend_->Draw(rows_[i], i);
-
 				}
-	
-				rend_->Draw(deck_, Renderer::DeckPos);
             }
+            Update();
         }
         else if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
             int p = pos - Renderer::FirstRow;

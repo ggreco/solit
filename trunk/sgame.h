@@ -35,6 +35,7 @@ class SpiderGame : public Game
     bool IsCompleted();
     void Restart();
     void Update();
+    void SetupCards();
 	void Victory();
 public:
     SpiderGame(int id);

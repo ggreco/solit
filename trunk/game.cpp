@@ -68,39 +68,39 @@ Game::Game(int id, int cols, int seeds, bool card_slot ) :
     deck_.Deal();
 }
 
-// STUB, do better :)
 void Game::
 Victory(Stackable &used, int x_offset, int y_offset)
 {
     bool flag = true;
 	int idx;
-    
+   
+    std::cerr << "Entro in victory, " << used.Size() << " carte\n";
+
     for (;;) {
         idx = 0;
         CardIterator it = used.GetCards().begin();
 
-        while (data_[idx].x >= 0 ) {
+        while (data_[idx].x >= 0 && it != used.GetCards().end()) {
             it->Covered(flag);
-    	    rend_->Move(*it, Point(data_[idx].x + x_offset, 
-								   data_[idx].y + y_offset));
+            rend_->Move(*it, Point(data_[idx].x + x_offset, 
+                        data_[idx].y + y_offset));
 
             idx++;
             it++;
 
-            int i = 0;
-
-            while (i < 4) {
+            for (int i = 0; i < 4; ++i) {
                 rend_->Poll();
 
                 if (status_ == PLAYING)
                     return;
 
                 rend_->Delay(20);
-                i++;
             }
 
-    	    rend_->Update();
+            rend_->Update();
         }
+
+
 
         flag = !flag;
     }
@@ -113,14 +113,16 @@ KeyRelease(char key)
 	switch(key) {
         case 'w':
 			{
-				//deck_.Clear();
 				rend_->Clear();
 				status_ = PLAYING_VICTORY;
 				
 				Stackable fake;
 
-				while (!deck_.Empty())
-					fake.Add(deck_.GetCard());
+				while (!deck_.Empty()) { // we need a lot of cards
+                    Card c = deck_.GetCard();
+					fake.Add(c);
+					fake.Add(c);
+                }
 
 				Victory(fake, 2, 40); // it's good both for 4:3 and 3:4
 			}
@@ -139,8 +141,7 @@ void Game::
 MouseMove(const Point &p)
 {
     if (!selection_.Empty()) {
-        if (selection_.Size() > 1)
-            rend_->Clear(selection_.Get());
+        Update();
 
         rend_->Draw(selection_.First(), p );
 
@@ -178,7 +179,9 @@ ReleaseButton(const Point &p)
 void Game::
 UndoMove()
 {
-    moves_.Revert(rend_);
+    moves_.Revert();
+    Update();
+    rend_->Update();
 }
 
 void Game::
@@ -204,14 +207,16 @@ Restart()
 	deck_.init();
     deck_.Deal();
 
-	Update();
-	rend_->UpdateAll();
+    SetupCards();
+
+    Update();
 
     status_ = PLAYING;
+    rend_->Update();
 }
 
 void MoveList::
-Revert(Renderer *rend)
+Revert()
 {
     if (moves_.empty())
         return;
@@ -222,31 +227,26 @@ Revert(Renderer *rend)
 
     if (!last.dest) {
         last.source->Get().Covered(true);
-        rend->Draw(*last.source, last.source_pos);
-
     }
     else {
-        for (RevCardIterator it = last.cards.GetCards().rbegin(); 
-                      it != last.cards.GetCards().rend(); ++it)
-           rend->Clear(*it);
-        
         while (last.cards.Size()) {
             last.source->Add(last.cards.First());
             last.dest->Remove();
             last.cards.RemoveFirst();
         }
-
-        rend->Draw(*last.source, last.source_pos);
-
-        if (last.dest_pos != Renderer::Discarded)
-            rend->Draw(*last.dest, last.dest_pos);
     }
 
     moves_.pop();
 
     if (linked != -1 && !moves_.empty() &&
         moves_.top().linked == linked) {
-        Revert(rend);
+        Revert();
     }
 }
 
+void Game::
+Exposed()
+{
+    Update();
+    Rend()->Update();
+}

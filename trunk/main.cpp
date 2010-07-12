@@ -3,35 +3,37 @@
 #include "kgame.h"
 #include "sgame.h"
 
-#ifndef WINCE
-
+#ifdef XIPHONE
 #define RENDERER_SET 1
+#elif defined(WINCE)
+#define RENDERER_SET 0
+#else
+#define RENDERER_SET 2
+#endif
+
+#ifndef WINCE
 int main(int argc, char *argv[])
 #else
-
-#define RENDERER_SET 0
-
-extern "C" {
-int SDL_main(int argc, char *argv[]);
-}
-
-int SDL_main(int argc, char *argv[])
+extern "C" int SDL_main(int argc, char *argv[])
 #endif
 {
 	try {
-        int gametype = 0;
+        int gametype = 1;
+        int renderset = RENDERER_SET;
 
-        if (argc == 2)
+        if (argc >= 2)
             gametype = atoi(argv[1]);
+        if (argc == 3)
+            renderset = atoi(argv[2]);
 
         Game *game = NULL;
 
         switch (gametype) {
             case 0:
-        	    game = new KlondikeGame(RENDERER_SET);
+        	    game = new KlondikeGame(renderset);
                 break;
             case 1:
-        	    game = new SpiderGame(RENDERER_SET);
+        	    game = new SpiderGame(renderset);
                 break;
         }
         if (game) {

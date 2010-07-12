@@ -13,6 +13,7 @@ public:
     virtual void DoubleClick(const Point &) = 0;   
     virtual void KeyPress(char) = 0;   
 	virtual void KeyRelease(char) = 0;   
+    virtual void Exposed() = 0;
 };
 
 #endif
