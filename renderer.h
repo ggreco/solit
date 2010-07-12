@@ -53,14 +53,13 @@ class CardRenderer
     public:
         virtual void Draw(const Card &, const Point &) = 0;
         virtual void Move(const Card &, const Point &) = 0;
-        virtual void Refresh(const Card &) = 0;
-        virtual void Clear(const Card &) = 0;
 };
 
 enum WidgetId {NEW_GAME, QUIT_GAME, UNDO_MOVE, HIGHSCORE, WIDGET_NUM};
 
 #define MAX_TOTAL_SEEDS 24
 #define MAX_TOTAL_COLUMNS 32
+#define SET_NUMBER 3 
 
 class Renderer
 {
@@ -91,7 +90,6 @@ class Renderer
         virtual void Delay(int) = 0;
         virtual bool Wait() = 0;
 		virtual void Update() = 0;
-        virtual void UpdateAll() = 0;
 		virtual void Clear() = 0;
         void Draw(const Row &, int pos);
         void Move(const Card &c, const Point &pos) { 
@@ -102,7 +100,6 @@ class Renderer
 		void Move(const Card &c, int pos); 
         void Draw(const Stackable &, int pos);
         void Draw(const Card &c, const Point &p) { GetCardRenderer()->Draw(c, p); }
-        void Clear(const Card &c) { GetCardRenderer()->Clear(c); }
         void SetActionManager(ActionManager *a) { action_ = a; }
         virtual CardRenderer *GetCardRenderer()  = 0;
         virtual void DrawEmpty(const Point &p) = 0;
@@ -123,6 +120,8 @@ class Renderer
         void DoubleClick(const Point &p) { if (action_) action_->DoubleClick(p); }
 		void KeyPress(const char key) { if (action_) action_->KeyPress(key); }
 		void KeyRelease(char key) { if (action_) action_->KeyRelease(key); }
+        void Exposed() { if (action_) action_->Exposed(); }
+
         int GetPosition(const Point &p);
         std::pair<int,int> GetRowInfo() { return std::make_pair(column_positions_[0].Y(), card_size_.Y() ); }
         virtual ~Renderer() {

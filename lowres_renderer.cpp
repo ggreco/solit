@@ -5,8 +5,10 @@
 
 ResInfo res[] = {
     {320, 240, 20, 30, 2, 2, 8, 8, 1.0, "low"},
+    {480, 320, 30, 45, 3, 3, 8, 8, 1.5, "low"},
     {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"},
     {240, 320, 20, 30, 3, 2, 8, 8, 1.0, "low"},
+    {320, 480, 26, 45, 5, 3, 8, 8, 1.5, "low"},
     {480, 640, 40, 60, 7, 4, 13, 16, 2.0, "med"},
 };
 
@@ -15,9 +17,8 @@ Clear()
 {
     int i;
 
-	card_rend_.ClearBuffers();
-
-    SDL_FillRect(screen_, NULL, background_);
+    SDL_SetRenderDrawColor(background_.r, background_.g, background_.b, background_.unused);
+    SDL_RenderFill(NULL);
 
 	for (i = 0; i < Seeds(); i++)
         DrawRect(seed_positions_[i], card_size_, white_);
@@ -28,21 +29,22 @@ Clear()
 
             dst.x = widget_positions_[i].X();
             dst.y = widget_positions_[i].Y();
+            Point p = WidgetSize((WidgetId)i);
+            dst.w = p.X();
+            dst.h = p.Y();
 
-            SDL_BlitSurface(widgets_[i], NULL, screen_, &dst);
+            SDL_RenderCopy(widgets_[i], NULL, &dst);
         }
     }
-
-    UpdateAll();
 }
 
 void SdlRenderer::
-DrawRect(const Point &pos, const Point &size, Uint32 color)
+DrawRect(const Point &pos, const Point &size, SDL_Color &color)
 {
     SDL_Rect r = { pos.X(), pos.Y(), size.X(), size.Y() };
 
-    AddDirtyRect(r);
-    SDL_FillRect(screen_, &r, color);
+    SDL_SetRenderDrawColor(color.r, color.g, color.b, color.unused);
+    SDL_RenderFill(&r);
 
     r.x++;
     r.y++;
@@ -50,30 +52,14 @@ DrawRect(const Point &pos, const Point &size, Uint32 color)
     r.w -= 2;
     r.h -= 2;
 
-    SDL_FillRect(screen_, &r, background_);
-}
-
-void SdlRenderer::
-UpdateAll()
-{
-    SDL_UpdateRect(screen_, 0, 0, 0, 0);
-    rects_.clear();
+    SDL_SetRenderDrawColor(background_.r, background_.g, background_.b, background_.unused);
+    SDL_RenderFill(&r);
 }
 
 void SdlRenderer::
 Update()
 {
-    if (!rects_.empty()) {
-        for (std::vector<SDL_Rect>::iterator it = rects_.begin(); it != rects_.end(); ++it) {
-            if ((it->w + it->x) > screen_->w)
-                it->w = screen_->w - it->x;
-            if ((it->h + it->y) > screen_->h)
-                it->h = screen_->h - it->y;
-        }
-
-        SDL_UpdateRects(screen_, rects_.size(), &rects_[0]);
-        rects_.clear();
-    }
+    SDL_RenderPresent();    
 }
 
 void SdlRenderer::
@@ -115,6 +101,15 @@ ParseEvent(const SDL_Event &e)
                 lastclick_ = SDL_GetTicks();
 
             break;
+        case SDL_WINDOWEVENT:
+            switch (e.window.event) {
+                case SDL_WINDOWEVENT_CLOSE:
+                    exit(0);
+                case SDL_WINDOWEVENT_EXPOSED:
+                    Renderer::Exposed(); 
+                    break;
+            }
+            break;
     }
 }
 
@@ -135,26 +130,48 @@ Wait()
 #define OPENFLAGS SDL_SWSURFACE
 #endif
 
-SDL_Surface *SdlRenderer::
+SDL_TextureID SdlRenderer::
 load_image(const std::string &base)
 {
 	extern SDL_RWops *load_or_grab_image(const std::string &);
 	std::string path = std::string("./") + res_.prefix + "_" + base + ".bmp";
+    SDL_DisplayMode mode;
+    SDL_GetCurrentDisplayMode(&mode);
 
-//	std::cerr << "Loading " << path << std::endl;
-
+//    std::cerr << "pixelformat: " << mode.format << '\n';
 	if (SDL_RWops *rw = load_or_grab_image(path)) {
-		SDL_Surface *dest = SDL_LoadBMP_RW(rw, 1); // rwops is closed by loadbmp
+        if (SDL_Surface *dest = SDL_LoadBMP_RW(rw, 1)) { // rwops is closed by loadbmp
+            int bpp;
+            Uint32  Rmask, Gmask, Bmask, Amask;
+            SDL_PixelFormatEnumToMasks(mode.format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
 
-		return dest;
+//            std::cerr << "bpp: " << bpp << '\n';
+//            std::cerr << "r:" << (void *)Rmask << " g:" << (void *)Gmask << " b:" << (void *)Bmask << '\n';
+
+            if (SDL_Surface *temp = SDL_CreateRGBSurface(0 , dest->w, dest->h, bpp,
+                        Rmask, Gmask, Bmask, Amask
+                        )) {
+                SDL_BlitSurface(dest, NULL, temp, NULL);
+                SDL_TextureID id = SDL_CreateTextureFromSurface(mode.format, temp);
+
+                if (id == 0)
+                    std::cerr << "SDL Error: " << SDL_GetError() << '\n';
+
+                SDL_SetTextureScaleMode(id, SDL_TEXTURESCALEMODE_FAST);
+
+                SDL_FreeSurface(temp);
+                SDL_FreeSurface(dest);
+                return id;
+            }
+            SDL_FreeSurface(dest);
+        }
 	}
-
-	return NULL;
+	return 0;
 }
 SdlRenderer::
 SdlRenderer(int type, int cols, int seeds, bool card_slot) :
     Renderer(cols, seeds, card_slot),
-    lastclick_(0), res_(res[type]), card_rend_(".", *this)
+    lastclick_(0), res_(res[type])
 {
     int i;
 
@@ -162,7 +179,7 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
         throw std::string("Unable to initialize SDL.");
 
     for (i = 0; i < WIDGET_NUM; ++i)
-        widgets_[i] = NULL;
+        widgets_[i] = 0;
 
     atexit(SDL_Quit);
 
@@ -170,9 +187,35 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
 
     scaling_ = res_.scaling;
 
-    if (!(screen_ = SDL_SetVideoMode(screen_size_.X(), screen_size_.Y(), 
-				16, OPENFLAGS)))
+    std::cerr << screen_size_.X() << ',' << screen_size_.Y() << '\n';
+    if (!(screen_ = SDL_CreateWindow("Solit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                     screen_size_.X(), screen_size_.Y(), 0)))
         throw std::string("Unable to open display.");
+
+    w_ = screen_size_.X();
+    h_ = screen_size_.Y();
+
+    int n = SDL_GetNumRenderDrivers();
+    int selected = -1;
+
+    for (int i = 0; i < n; ++i) {
+        SDL_RendererInfo info;
+        SDL_GetRenderDriverInfo(i, &info);        
+
+        std::cerr << "Renderer " << i << ") " << info.name 
+                  << " scale modes: " << info.scale_modes << '\n';
+
+        if (selected < 0)
+            if (info.scale_modes || !strcmp(info.name, "opengl") ) 
+                selected = i;
+    }
+    std::cerr << "Selected: " << selected << '\n';
+
+    if (SDL_CreateRenderer(screen_, selected, 0) == -1) 
+        throw std::string("Unable to create accelerated renderer");
+
+    if (SDL_SelectRenderer(screen_) == -1)
+        throw std::string("Unable to select render target");
 
 	if (!(widgets_[QUIT_GAME] = load_image("close") )) 
         throw std::string("Unable to load close image");
@@ -183,29 +226,25 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
     if (!(widgets_[NEW_GAME] = load_image("new") ))
         throw std::string("Unable to load close image");
 
-    background_ =  SDL_MapRGB(screen_->format,
-                        0, 200, 0);
-    white_ = SDL_MapRGB(screen_->format,
-                        255, 255, 255);
-    black_ = SDL_MapRGB(screen_->format,
-                        0, 0, 0);
+    card_rend_ = new SdlCardRenderer(".", *this);
 
-    SDL_Rect r = { 0, 0, screen_->w, screen_->h};
-    SDL_SetClipRect(screen_, &r);
+    background_.r = 0; background_.g = 200; background_.b = 0; background_.unused = SDL_ALPHA_OPAQUE;
+    memset(&white_, 255, sizeof(white_));
+    memset(&black_, 0, sizeof(black_));
+    black_.unused = SDL_ALPHA_OPAQUE;
 
-    card_size_ = Point(res_.card_width, 
-                res_.card_height);
+    card_size_ = Point(res_.card_width, res_.card_height);
 
     spacing_ = Point(res_.spacing_x, res_.spacing_y);
 
-    card_rend_.Optimize();
+    SDL_ShowWindow(screen_);
 }
 
 SdlCardRenderer::
 SdlCardRenderer(const std::string &path, SdlRenderer &rend) :
     rend_(rend)
 {
-    if (! (source_ = rend_.load_image("seeds")))
+    if (!(source_ = rend_.load_image("seeds")))
         throw std::string("Unable to load cards GFX");
 
     if (!(back_ = rend_.load_image("back")))
@@ -216,60 +255,12 @@ SdlCardRenderer(const std::string &path, SdlRenderer &rend) :
 }
 
 void SdlCardRenderer::
-Optimize()
-{
-    SDL_Surface *temp = SDL_DisplayFormat(source_);
-
-    if (temp) {
-        SDL_FreeSurface(source_);
-        source_ = temp;
-    }
-
-    temp = SDL_DisplayFormat(back_);
-
-    if (temp) {
-        SDL_FreeSurface(back_);
-        back_ = temp;
-    }
-}
-
-void SdlCardRenderer::
-Refresh(const Card &card)
-{ 
-    std::map<Card,CardData>::iterator it;
-
-    if ((it = card_datas_.find(card)) != card_datas_.end()) 
-        Draw(card, it->second.Pos());
-}
-
-void SdlCardRenderer::
-Clear(const Card &card)
-{
-    std::map<Card,CardData>::iterator it;
-
-    if ((it = card_datas_.find(card)) != card_datas_.end()) {
-        SDL_Rect r;
-
-        r.x = it->second.Pos().X();
-        r.y = it->second.Pos().Y();
-
-        r.w = it->second.Dirty()->w;
-        r.h = it->second.Dirty()->h;
-
-        rend_.AddDirtyRect(r);
-
-        SDL_BlitSurface(it->second.Dirty(), NULL, rend_.screen_, &r);
-
-        card_datas_.erase(it);
-    }
-}
-
-void SdlCardRenderer::
 Move(const Card &card, const Point &pos)
 {
+
+    /* TODO
     std::map<Card,CardData>::iterator it;
 	Point delta, start;
-
     if ((it = card_datas_.find(card)) != card_datas_.end()) {
 		start = it->second.Pos();
 
@@ -298,7 +289,7 @@ Move(const Card &card, const Point &pos)
 			SDL_Delay(5);
 		}
 	}
-
+*/
 
 	Draw(card, pos);
 }
@@ -306,66 +297,40 @@ Move(const Card &card, const Point &pos)
 void SdlCardRenderer::
 Draw(const Card &card, const Point &pos)
 {
-    std::map<Card,CardData>::iterator it;
-
-    if ((it = card_datas_.find(card)) != card_datas_.end()) {
-        SDL_Rect r;
-
-        r.x = it->second.Pos().X();
-        r.y = it->second.Pos().Y();
-
-        r.w = it->second.Dirty()->w;
-        r.h = it->second.Dirty()->h;
-
-        rend_.AddDirtyRect(r);
-
-        SDL_BlitSurface(it->second.Dirty(), NULL, rend_.screen_, &r);
-
-        it->second.Pos(pos);
-    }
-
     SDL_Rect r = { pos.X(), pos.Y(), 
                    rend_.card_size_.X(),
                    rend_.card_size_.Y() };
 
-    if (it == card_datas_.end()) {
-        card_datas_[card].Dirty(rend_.MakeDirty());
-
-        it = card_datas_.find(card);
-        it->second.Pos(pos);
-    }
-
-    SDL_BlitSurface(rend_.screen_, &r, it->second.Dirty(), NULL);
-
-    rend_.AddDirtyRect(r);
-
     if (card.Covered()) {
-        SDL_BlitSurface(back_, NULL, rend_.screen_, &r);
+        SDL_RenderCopy(back_, NULL, &r);
         return;
     }
 
-    SDL_FillRect(rend_.screen_, &r, rend_.black_);
+    SDL_SetRenderDrawColor(rend_.black_.r, rend_.black_.g, rend_.black_.b, rend_.black_.unused);
+    SDL_RenderFill(&r);
 
     r.x++;
     r.y++;
-
     r.w -= 2;
     r.h -= 2;
 
-    SDL_FillRect(rend_.screen_, &r, rend_.white_);
+    SDL_SetRenderDrawColor(rend_.white_.r, rend_.white_.g, rend_.white_.b, rend_.white_.unused);
+    SDL_RenderFill(&r);
 
     r.x = pos.X() + rend_.res_.spacing_x;
     r.y = pos.Y() + rend_.res_.spacing_y;
+    r.w = sw_;
+    r.h = sh_;
 
     SDL_Rect s = { (card.Value() != 1) ? sw_ * card.Value() :
                  14 * sw_, card.IsBlack() ? 0 : sh_, sw_, sh_ };
 
-    SDL_BlitSurface(source_, &s,rend_.screen_, &r);
+    SDL_RenderCopy(source_, &s, &r);
 
     r.x = pos.X() + rend_.card_size_.X() - sw_ - rend_.res_.spacing_x / 2;
     r.y = pos.Y() + rend_.card_size_.Y() - sh_ - rend_.res_.spacing_y / 2;
 
-    SDL_BlitSurface(source_, &s,rend_.screen_, &r);
+    SDL_RenderCopy(source_, &s, &r);
 
     if (card.IsRed())
         s.x = 15 * sw_ + ((card.Seed() == Hearts) ? 0 : sw_);
@@ -374,11 +339,11 @@ Draw(const Card &card, const Point &pos)
 
     r.x = pos.X() + rend_.card_size_.X() - sw_ - rend_.res_.spacing_x / 2;
     r.y = pos.Y() + rend_.res_.spacing_y;
-    SDL_BlitSurface(source_, &s,rend_.screen_, &r);
+    SDL_RenderCopy(source_, &s, &r);
 
     r.x = pos.X() + rend_.res_.spacing_x;
     r.y = pos.Y() + rend_.card_size_.Y() - sh_ -  rend_.res_.spacing_y / 2;
-    SDL_BlitSurface(source_, &s,rend_.screen_, &r);
+    SDL_RenderCopy(source_, &s, &r);
 
 }
 

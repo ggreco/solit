@@ -53,7 +53,7 @@ class MoveList
     std::stack<Move> moves_;
 public:
 
-    void Revert(Renderer *);
+    void Revert();
 
     size_t Size() const { return moves_.size(); }
     void Clear() { while(!moves_.empty()) moves_.pop(); }
@@ -106,6 +106,7 @@ protected:
     void UndoMove();
 	virtual void ReleaseButton(const Point &);
 	virtual void KeyRelease(char);
+    void Exposed();
 
 	static PosData data_[];
 public:
@@ -114,6 +115,7 @@ public:
     virtual void Restart();
    	void Victory(Stackable &, int, int);
     virtual void Update() = 0;
+    virtual void SetupCards() = 0;
     Game(int rend_id, int columns, int seeds = -1, bool card_slot = false);
     virtual ~Game() {};
 
