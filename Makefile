@@ -6,9 +6,9 @@ IMGS = images/low_back.bmp images/low_close.bmp images/low_new.bmp \
 SDLCONFIG = /home/gabry/no-backup/bin/sdl-config
 
 OBJS = main.o lowres_renderer.o deck.o game.o renderer.o card.o \
-       images.o sgame.o kgame.o
+       images.o sgame.o kgame.o serializer.o streamer.o
 
-CXXFLAGS = -g `$(SDLCONFIG) --cflags`
+CXXFLAGS = -Wall -g `$(SDLCONFIG) --cflags`
 TARGET = solit
 
 all: iconbuild $(TARGET)

@@ -2,12 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>SignerIdentity</key>
+    <string>Apple iPhone OS Application Signing</string>
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleExecutable</key>
     <string>Solit</string>
     <key>CFBundleIdentifier</key>
-    <string>com.google.code.iphonedevonlinux.apps.solit</string>
+    <string>net.sourceforge.solit.apps.solit</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundlePackageType</key>
@@ -15,7 +17,7 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>0.1</string>
+    <string>0.3</string>
 </dict>
 </plist>
 

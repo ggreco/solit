@@ -88,14 +88,14 @@ class Renderer
         
         virtual void Poll() = 0;
         virtual void Delay(int) = 0;
-        virtual bool Wait() = 0;
+        virtual void Wait() = 0;
 		virtual void Update() = 0;
 		virtual void Clear() = 0;
         void Draw(const Row &, int pos);
         void Move(const Card &c, const Point &pos) { 
             GetCardRenderer()->Move(c, 
-                Point( (int) ((double)pos.X() * scaling_), 
-                       (int) ((double)pos.Y() * scaling_)));
+                Point( (int) ((double)pos.X() * x_scaling_), 
+                       (int) ((double)pos.Y() * y_scaling_)));
         }
 		void Move(const Card &c, int pos); 
         void Draw(const Stackable &, int pos);
@@ -103,9 +103,8 @@ class Renderer
         void SetActionManager(ActionManager *a) { action_ = a; }
         virtual CardRenderer *GetCardRenderer()  = 0;
         virtual void DrawEmpty(const Point &p) = 0;
-        Renderer(int cols, int seeds = -1, bool card_slot = false) : 
-            columns_(cols),
-            seeds_(seeds), has_seeds_(seeds > 0),
+        Renderer(int cols, int seeds = -1, bool card_slot = false) :           
+            seeds_(seeds), columns_(cols), has_seeds_(seeds > 0),
             has_cards_slot_(card_slot),
             action_(NULL) {
                 if (has_seeds_)
@@ -121,6 +120,7 @@ class Renderer
 		void KeyPress(const char key) { if (action_) action_->KeyPress(key); }
 		void KeyRelease(char key) { if (action_) action_->KeyRelease(key); }
         void Exposed() { if (action_) action_->Exposed(); }
+        void OnQuit() { if (action_) action_->OnQuit(); }
 
         int GetPosition(const Point &p);
         std::pair<int,int> GetRowInfo() { return std::make_pair(column_positions_[0].Y(), card_size_.Y() ); }
@@ -143,7 +143,7 @@ class Renderer
         Point *column_positions_;
         Point screen_size_;
         Point spacing_;
-        double scaling_;
+        double x_scaling_, y_scaling_;
     private:
         int seeds_;
         int columns_;

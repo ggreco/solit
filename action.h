@@ -14,6 +14,7 @@ public:
     virtual void KeyPress(char) = 0;   
 	virtual void KeyRelease(char) = 0;   
     virtual void Exposed() = 0;
+    virtual void OnQuit() = 0;
 };
 
 #endif

@@ -37,8 +37,16 @@ class SpiderGame : public Game
     void Update();
     void SetupCards();
 	void Victory();
+
+    
 public:
     SpiderGame(int id);
+
+    void serialize(Serializer &s) {
+        Game::serialize(s);
+        s & rows_;
+        s & used_;
+    }
 };
 
 #endif

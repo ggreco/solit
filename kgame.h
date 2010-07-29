@@ -42,6 +42,14 @@ class KlondikeGame : public Game
     void Victory();
     void Restart();
 	bool SeedsFull();
+
+    void serialize(Serializer &s) {
+        Game::serialize(s);
+
+        s & cards_;
+        s & rows_;
+        s & seeds_;
+    }
 public:
     KlondikeGame(int id);
 };

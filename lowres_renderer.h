@@ -14,7 +14,7 @@ struct ResInfo
     int card_width, card_height;
     int spacing_x, spacing_y;
     int symbol_width, symbol_height;
-    double scaling;
+    double xscaling, yscaling;
     const char *prefix;
 };
 
@@ -23,14 +23,13 @@ class SdlRenderer;
 class SdlCardRenderer : public CardRenderer
 {
     private:
-        SDL_TextureID source_;
-        SDL_TextureID back_;
+        SDL_Texture *source_;
+        SDL_Texture *back_;
         SdlRenderer &rend_;
         int sw_, sh_;
     public:
         SdlCardRenderer(const std::string &path, SdlRenderer &rend);
 
-        SDL_TextureID Back() { return back_; }
         void Draw(const Card &, const Point &);
         void Move(const Card &, const Point &);
 };
@@ -44,7 +43,7 @@ class SdlRenderer : public Renderer
         int w_, h_;
         SDL_Color white_, black_, background_;
         SdlCardRenderer *card_rend_;
-        SDL_TextureID widgets_[WIDGET_NUM];
+        SDL_Texture *widgets_[WIDGET_NUM];
 
         void DrawRect(const Point &pos, const Point &size, SDL_Color & color);
         void DrawEmpty(const Point &pos) { DrawRect(pos, card_size_, background_); }
@@ -56,12 +55,12 @@ class SdlRenderer : public Renderer
         void Update();
         void Delay(int ms) { SDL_Delay(ms); }
         void Poll();
-        bool Wait();
+        void Wait();
         SdlRenderer(int id, int cols, int seeds, bool card_slot);
         ~SdlRenderer() {};
         CardRenderer *GetCardRenderer() { return card_rend_; }
 
-		SDL_TextureID load_image(const std::string &);
+		SDL_Texture *load_image(const std::string &);
 
         Point WidgetSize(WidgetId id) {
             int w, h;
