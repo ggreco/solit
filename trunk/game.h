@@ -10,6 +10,10 @@
 #include <stack>
 #include <map>
 
+#define SAVEGAME_NAME "_saved_game"
+
+enum GameId {KLONDIKE_ID, SPIDER_ID, NUMBER_OF_GAMES};
+
 class Renderer;
 class Point;
 
@@ -75,7 +79,7 @@ public:
 
 typedef std::map<int, std::pair<int, int> > HighScoreMap;
 
-class Game : public ActionManager
+class Game : public ActionManager, public Serializable
 {
 protected:
 	
@@ -88,7 +92,7 @@ protected:
 
     enum StatusValue {PLAYING, PLAYING_VICTORY, AUTOCOMPLETE};
 
-    StatusValue status_;
+    int status_;
     MoveList moves_;
     Renderer *rend_;
     Selection selection_;
@@ -107,6 +111,15 @@ protected:
 	virtual void ReleaseButton(const Point &);
 	virtual void KeyRelease(char);
     void Exposed();
+    void OnQuit();
+
+
+    void Save();
+
+// names on the filesystem
+    static std::string DirName();
+    static std::string GameName();
+    static std::string ScoreName();
 
 	static PosData data_[];
 public:
@@ -122,6 +135,16 @@ public:
     static void update_scores();
     void check_scores();
     void read_scores();
+
+
+    void startup();
+
+    virtual void serialize(Serializer& p) {
+        p & status_;
+//        p & moves_; we cannot go behind the save point
+        p & selection_;
+        p & deck_;
+    }
 };
 
 #endif

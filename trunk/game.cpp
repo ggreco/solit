@@ -24,7 +24,7 @@ void Game::update_scores()
     if (game_id_ != -1) {
         std::cerr << "Updating highscores\n";
 
-        if (FILE *hs = fopen(".scores", "w")) {
+        if (FILE *hs = fopen(ScoreName().c_str(), "w")) {
             for (HighScoreMap::iterator it = scores_.begin();
                     it != scores_.end(); ++it) {
                 fprintf(hs, "%08d %08d %08d\n", it->first, it->second.first, 
@@ -37,32 +37,25 @@ void Game::update_scores()
 
 void Game::read_scores()
 {
-    if (FILE *hs = fopen(".scores", "r")) {
+    if (FILE *hs = ::fopen(ScoreName().c_str(), "r")) {
         int a, b, c;
 
-        while(fscanf(hs, "%d %d %d\n", &a, &b, &c) == 3)
+        while(::fscanf(hs, "%d %d %d\n", &a, &b, &c) == 3)
             scores_[a] = std::pair<int, int>(b, c);
        
-        fclose(hs);
+        ::fclose(hs);
     }
-    else { // init scores to 0
-        for (int i = 0; i < 4; i++)
-            scores_[i] = std::pair<int, int>(0, 0);
-    }
-
-    atexit(update_scores);
 }
 
 Game::Game(int id, int cols, int seeds, bool card_slot ) :
-    deck_(2), status_(PLAYING)
+    status_(PLAYING), deck_(2)
 {
-    game_id_ = id;
-
-    read_scores();
+    for (int i = 0; i < NUMBER_OF_GAMES; i++)
+        scores_[i] = std::pair<int, int>(0, 0);
 
     rend_ = new SdlRenderer(id, cols, seeds, card_slot);
 
-    srand(time(NULL));
+    ::srand(::time(NULL));
     rend_->SetActionManager(this);
 
     deck_.Deal();
@@ -128,8 +121,7 @@ KeyRelease(char key)
 			}
             break;
 		case 'q':
-            check_scores();
-			exit(0);
+            OnQuit();
 			break;
 		case 'n':
 			Restart();
@@ -162,8 +154,7 @@ ReleaseButton(const Point &p)
 
             switch (pos) {
                 case QUIT_GAME:
-                    check_scores();
-                    exit(0);
+                    OnQuit();
                     break;
                 case UNDO_MOVE:
 					if (status_ == PLAYING)
@@ -174,6 +165,92 @@ ReleaseButton(const Point &p)
                     break;
             }
 	}
+}
+
+void Game::
+OnQuit() {
+    check_scores();
+    if (status_ != PLAYING_VICTORY)
+        Save();
+    else
+        ::remove(GameName().c_str());
+
+    exit(0);
+}
+
+void Game::
+startup()
+{
+    read_scores();
+
+    if (FILE *f = ::fopen(GameName().c_str(), "rb")) {
+        std::cerr << "Loading game in progress...";
+        SerialLoader s(f);
+
+        s & *this;
+        std::cerr << "OK.\n";
+        ::fclose(f);
+    }
+    else
+        SetupCards();
+
+    Update();
+    rend_->Update();
+}
+
+std::string Game::
+ScoreName() {
+    std::string filename = DirName();
+
+    filename += ".scores";
+
+    return filename;
+}
+
+std::string Game::
+DirName() {
+#ifdef XIPHONE
+    return "/User/Documents/";
+#elif defined(WIN32)
+    return "./";
+#else
+    if (const char *d = SDL_getenv("HOME")) {
+        std::string s = d;
+        s.append("/");
+
+        return s;
+    }
+    else
+        return "./";
+#endif
+}
+
+std::string Game::
+GameName() {
+    static const char *gamename[NUMBER_OF_GAMES] = { "klondike", "spider" };
+    std::string filename = DirName();
+
+    if (game_id_ >= 0 && game_id_ < NUMBER_OF_GAMES)
+        filename.append(gamename[game_id_]);
+    else
+        std::cerr << "Invalid game id!\n";
+
+    filename.append(SAVEGAME_NAME);
+
+    return filename;
+}
+
+void Game::
+Save() {
+    if (FILE *f = ::fopen(GameName().c_str(), "wb")) {
+        std::cerr << "Writing status to disk...";
+        SerialSaver s(f);
+        s & *this;
+        std::cerr << "Done.\n";
+        ::fclose(f);
+    }
+    else
+        std::cerr << "Unable to open " << GameName() << " for writing!\n";
 }
 
 void Game::
@@ -188,9 +265,9 @@ void Game::
 check_scores()
 {
     if (status_ == PLAYING_VICTORY)
-        scores_[game_id_ / 2].first++;
+        scores_[game_id_ ].first++;
     else if (moves_.Size())
-        scores_[game_id_ / 2].second++;
+        scores_[game_id_ ].second++;
 
     update_scores();
 }

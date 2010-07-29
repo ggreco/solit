@@ -1,20 +1,24 @@
 #include "sgame.h"
 #include <stdlib.h>
+#include <iostream>
 
 SpiderGame::
 SpiderGame(int res) :
     Game(res + SET_NUMBER, SPIDER_COLUMNS)
 {
-    Point pos(rend_->Spacing().X(), 
-            rend_->ScreenHeight() - rend_->CardSize().Y() - rend_->Spacing().Y());
+    // spider is game 1
+    game_id_ = SPIDER_ID;
 
-#ifdef XIPHONE
-    pos.AddY(-20);
-#endif
+    Point pos(rend_->Spacing().X() / 2, 
+            rend_->ScreenHeight() - rend_->CardSize().Y() - rend_->Spacing().Y());
 
     rend_->PositionDeck(pos);
 
     pos.Y(rend_->Spacing().Y());
+
+#ifdef XIPHONE
+    pos.AddY(20);
+#endif
 
     for (int i = 0; i < rend_->Columns(); i++) {
         rend_->PositionColumn(i, pos); 
@@ -25,10 +29,6 @@ SpiderGame(int res) :
     pos.set(rend_->ScreenWidth() - rend_->WidgetWidth(QUIT_GAME) - rend_->Spacing().X(),
             rend_->ScreenHeight() - rend_->WidgetHeight(QUIT_GAME) - rend_->Spacing().Y());
 
-#ifdef XIPHONE
-    pos.AddY(-20);
-#endif
-
     rend_->PositionWidget(QUIT_GAME, pos);
 
     pos.AddX(-rend_->WidgetWidth(NEW_GAME) - rend_->Spacing().X() * 2);
@@ -37,9 +37,7 @@ SpiderGame(int res) :
     pos.AddX(-rend_->WidgetWidth(UNDO_MOVE) - rend_->Spacing().X() * 2);
     rend_->PositionWidget(UNDO_MOVE, pos);
 
-    SetupCards();
-    Update();
-    rend_->Update();
+    Game::startup();
 }
 
 void SpiderGame::

@@ -8,6 +8,9 @@ KlondikeGame::
 KlondikeGame(int res) :
     Game(res, KLONDIKE_COLUMNS, KLONDIKE_TOTAL_SEEDS, true)
 {
+    // klondike is game 0
+    game_id_ = KLONDIKE_ID;
+
     rend_->PositionWidget(QUIT_GAME, 
             Point(rend_->ScreenWidth() - 
                 rend_->WidgetWidth(QUIT_GAME), 0)
@@ -23,7 +26,7 @@ KlondikeGame(int res) :
                 (rend_->ScreenHeight() - rend_->WidgetHeight(UNDO_MOVE)) / 2)
             );
 
-    Point pos(rend_->Spacing().X() / 2, rend_->Spacing().Y() / 2);
+    Point pos(rend_->Spacing().X(), rend_->Spacing().Y() / 2);
     Point displacement(rend_->CardSize().X() + rend_->Spacing().X(), 0);
     rend_->PositionDeck(pos);
 
@@ -40,16 +43,14 @@ KlondikeGame(int res) :
         pos += displacement;
     }
 
-    pos.set(rend_->Spacing().X() / 2, rend_->Spacing().Y() * 5 / 2 + rend_->CardSize().Y());
+    pos.set(rend_->Spacing().X() , rend_->Spacing().Y() * 5 / 2 + rend_->CardSize().Y());
 
     for (int i = 0; i < rend_->Columns(); i++) {
         rend_->PositionColumn(i, pos);
         pos += displacement;
     }
 
-    SetupCards();
-    Update(); 
-    rend_->Update();
+    Game::startup();
 }
 
 void KlondikeGame::

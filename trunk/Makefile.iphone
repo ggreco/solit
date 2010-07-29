@@ -1,9 +1,13 @@
 OBJS = main.o lowres_renderer.o deck.o game.o renderer.o card.o \
-       images.o sgame.o kgame.o 
+       images.o sgame.o kgame.o serializer.o streamer.o
 
 SDK=/home/gabry/no-backup/iphone/sdks/iPhoneOS3.1.3.sdk
 CROSSDIR=/home/gabry/no-backup/iphone/toolchain/pre/bin/
+CODESIGN_ALLOCATE=$(CROSSDIR)/arm-apple-darwin9-codesign_allocate
+LDID=$(CROSSDIR)/arm-apple-darwin9-ldid
 CXX=$(CROSSDIR)/arm-apple-darwin9-g++
+
+export CODESIGN_ALLOCATE
 
 LDFLAGS = -L/home/gabry/no-backup/SDL-iphone/lib -lSDLiPhoneOS -bind_at_load \
           -framework Foundation -framework CoreFoundation -framework UIKit \
@@ -11,20 +15,44 @@ LDFLAGS = -L/home/gabry/no-backup/SDL-iphone/lib -lSDLiPhoneOS -bind_at_load \
           -framework CoreGraphics -framework QuartzCore
           
 
-CXXFLAGS = -g -I/home/gabry/no-backup/SDL-iphone/include -DXIPHONE
-TARGET = solit
+CXXFLAGS = -Os -Wall -I/home/gabry/no-backup/SDL-iphone/include -DXIPHONE
+TARGET = Solit
 
 all: $(TARGET)
 
 bundle: $(TARGET)
-	@mkdir -p Solit.app
-	@cp $(TARGET) Solit.app/Solit_
-	@cp icon.png Solit.app
-	@cp Info.plist Solit.app
-	@cp solit.sh Solit.app/Solit
+	@echo -n "Start bundle creation... " 
+	@rm -rf $(TARGET).app
+	@mkdir -p $(TARGET).app
+	@cp $(TARGET) $(TARGET).app/$(TARGET)_
+	@echo -n "SIGNING... "
+	@$(LDID) -S $(TARGET).app/$(TARGET)_
+	@cp images/icon.png $(TARGET).app/Icon.png
+	@cp Info.plist $(TARGET).app
+	@echo >$(TARGET).app/$(TARGET) "#!/bin/bash"
+	@echo >>$(TARGET).app/$(TARGET) 'HT=$$(dirname "$$0")'
+	@echo >>$(TARGET).app/$(TARGET) 'exec "$${HT}"/$(TARGET)_'
+	@echo "APPL????" > $(TARGET).app/PkgInfo
+	@echo "DONE" 
+
+images.cpp: 
+	make images.cpp
+
+ipa: bundle
+	@echo "Start IPA creation... " 
+	@rm -f $(TARGET).ipa
+	@mkdir -p working/Payload
+	@cp -R $(TARGET).app working/Payload
+	@cp images/iTunesArtwork working/
+	@cp iTunesMetadata.plist  working/
+	@chmod -R 775 working/Payload
+	@cd working && zip -r9 ../$(TARGET).zip iTunes* Payload && cd ..
+	@rm -rf working
+	@mv $(TARGET).zip $(TARGET).ipa
+	@echo "DONE" 
 
 $(TARGET): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 clean:
-	rm -fr *.o $(TARGET) Solit.app
+	rm -fr *.o $(TARGET) $(TARGET).app $(TARGET).ipa

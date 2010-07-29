@@ -4,12 +4,12 @@
 #include <math.h>
 
 ResInfo res[] = {
-    {320, 240, 20, 30, 2, 2, 8, 8, 1.0, "low"},
-    {480, 320, 30, 45, 3, 3, 8, 8, 1.5, "low"},
-    {640, 480, 40, 60, 4, 4, 13, 16, 2.0, "med"},
-    {240, 320, 20, 30, 3, 2, 8, 8, 1.0, "low"},
-    {320, 480, 26, 45, 5, 3, 8, 8, 1.5, "low"},
-    {480, 640, 40, 60, 7, 4, 13, 16, 2.0, "med"},
+    {320, 240, 20, 30, 2, 2, 8, 8, 1.0, 1.0, "low"},
+    {480, 320, 26, 45, 6, 3, 8, 8, 1.5, 1.33333, "low"},
+    {640, 480, 40, 60, 6, 4, 13, 16, 2.0, 2.0, "med"},
+    {240, 320, 20, 30, 4, 2, 8, 8, 1.0, 1.0, "low"},
+    {320, 480, 26, 45, 6, 3, 8, 8, 1.33333, 1.5, "low"},
+    {480, 640, 40, 60, 8, 4, 13, 16, 2.0, 2.0, "med"},
 };
 
 void SdlRenderer::
@@ -18,7 +18,7 @@ Clear()
     int i;
 
     SDL_SetRenderDrawColor(background_.r, background_.g, background_.b, background_.unused);
-    SDL_RenderFill(NULL);
+    SDL_RenderClear();
 
 	for (i = 0; i < Seeds(); i++)
         DrawRect(seed_positions_[i], card_size_, white_);
@@ -44,7 +44,7 @@ DrawRect(const Point &pos, const Point &size, SDL_Color &color)
     SDL_Rect r = { pos.X(), pos.Y(), size.X(), size.Y() };
 
     SDL_SetRenderDrawColor(color.r, color.g, color.b, color.unused);
-    SDL_RenderFill(&r);
+    SDL_RenderFillRect(&r);
 
     r.x++;
     r.y++;
@@ -53,7 +53,7 @@ DrawRect(const Point &pos, const Point &size, SDL_Color &color)
     r.h -= 2;
 
     SDL_SetRenderDrawColor(background_.r, background_.g, background_.b, background_.unused);
-    SDL_RenderFill(&r);
+    SDL_RenderFillRect(&r);
 }
 
 void SdlRenderer::
@@ -76,7 +76,7 @@ ParseEvent(const SDL_Event &e)
 {
     switch (e.type) {
         case SDL_QUIT:
-            exit(0);
+            Renderer::OnQuit();
             break;
         case SDL_KEYDOWN:
             Renderer::KeyPress(e.key.keysym.sym);
@@ -104,7 +104,8 @@ ParseEvent(const SDL_Event &e)
         case SDL_WINDOWEVENT:
             switch (e.window.event) {
                 case SDL_WINDOWEVENT_CLOSE:
-                    exit(0);
+                    Renderer::OnQuit();
+                    break;
                 case SDL_WINDOWEVENT_EXPOSED:
                     Renderer::Exposed(); 
                     break;
@@ -113,7 +114,7 @@ ParseEvent(const SDL_Event &e)
     }
 }
 
-bool SdlRenderer::
+void SdlRenderer::
 Wait()
 {
     for(;;) {
@@ -130,7 +131,7 @@ Wait()
 #define OPENFLAGS SDL_SWSURFACE
 #endif
 
-SDL_TextureID SdlRenderer::
+SDL_Texture *SdlRenderer::
 load_image(const std::string &base)
 {
 	extern SDL_RWops *load_or_grab_image(const std::string &);
@@ -152,7 +153,7 @@ load_image(const std::string &base)
                         Rmask, Gmask, Bmask, Amask
                         )) {
                 SDL_BlitSurface(dest, NULL, temp, NULL);
-                SDL_TextureID id = SDL_CreateTextureFromSurface(mode.format, temp);
+                SDL_Texture *id = SDL_CreateTextureFromSurface(mode.format, temp);
 
                 if (id == 0)
                     std::cerr << "SDL Error: " << SDL_GetError() << '\n';
@@ -185,7 +186,8 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
 
     screen_size_ = Point(res_.screen_width, res_.screen_height);
 
-    scaling_ = res_.scaling;
+    x_scaling_ = res_.xscaling;
+    y_scaling_ = res_.yscaling;
 
     std::cerr << screen_size_.X() << ',' << screen_size_.Y() << '\n';
     if (!(screen_ = SDL_CreateWindow("Solit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -306,18 +308,20 @@ Draw(const Card &card, const Point &pos)
         return;
     }
 
+    // draw the black border of the card
     SDL_SetRenderDrawColor(rend_.black_.r, rend_.black_.g, rend_.black_.b, rend_.black_.unused);
-    SDL_RenderFill(&r);
+    SDL_RenderFillRect(&r);
 
     r.x++;
     r.y++;
     r.w -= 2;
     r.h -= 2;
 
+    // draw the white square
     SDL_SetRenderDrawColor(rend_.white_.r, rend_.white_.g, rend_.white_.b, rend_.white_.unused);
-    SDL_RenderFill(&r);
+    SDL_RenderFillRect(&r);
 
-    r.x = pos.X() + rend_.res_.spacing_x;
+    r.x = pos.X() + rend_.res_.spacing_x / 2 + 1;
     r.y = pos.Y() + rend_.res_.spacing_y;
     r.w = sw_;
     r.h = sh_;
@@ -325,11 +329,13 @@ Draw(const Card &card, const Point &pos)
     SDL_Rect s = { (card.Value() != 1) ? sw_ * card.Value() :
                  14 * sw_, card.IsBlack() ? 0 : sh_, sw_, sh_ };
 
+    // put the number on the top left
     SDL_RenderCopy(source_, &s, &r);
 
     r.x = pos.X() + rend_.card_size_.X() - sw_ - rend_.res_.spacing_x / 2;
     r.y = pos.Y() + rend_.card_size_.Y() - sh_ - rend_.res_.spacing_y / 2;
 
+    // and on the bottom right
     SDL_RenderCopy(source_, &s, &r);
 
     if (card.IsRed())

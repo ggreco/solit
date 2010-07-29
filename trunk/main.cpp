@@ -18,21 +18,24 @@ extern "C" int SDL_main(int argc, char *argv[])
 #endif
 {
 	try {
-        int gametype = 1;
+        int gametype = SPIDER_ID; // spider = 1, klondike = 0
         int renderset = RENDERER_SET;
 
+#ifndef XIPHONE
         if (argc >= 2)
             gametype = atoi(argv[1]);
         if (argc == 3)
             renderset = atoi(argv[2]);
-
+#endif
         Game *game = NULL;
 
+        std::cerr << "Starting game type " << gametype << "\n";
+    
         switch (gametype) {
-            case 0:
+            case KLONDIKE_ID:
         	    game = new KlondikeGame(renderset);
                 break;
-            case 1:
+            case SPIDER_ID:
         	    game = new SpiderGame(renderset);
                 break;
         }

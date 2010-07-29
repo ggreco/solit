@@ -10,10 +10,13 @@ typedef std::deque<Card>::iterator CardIterator;
 typedef std::deque<Card>::const_iterator ConstCardIterator;
 typedef std::deque<Card>::reverse_iterator RevCardIterator;
 
-class Stackable
+class Stackable : public Serializable
 {
 protected:
     Cards cards_;
+    void serialize(Serializer &s) {
+        s & cards_;
+    }
 public:
     int Size() const { return cards_.size(); }
 	void Clear() { cards_.clear(); }
