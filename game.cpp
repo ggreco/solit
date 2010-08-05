@@ -3,6 +3,9 @@
 #include "deck.h"
 #include <iostream>
 #include "time.h"
+#ifndef WIN32
+#include <sys/stat.h>
+#endif
 
 Game::PosData Game::data_[] = 
 {
@@ -210,14 +213,17 @@ ScoreName() {
 std::string Game::
 DirName() {
 #ifdef XIPHONE
-    return "/User/Documents/";
+    return "../Documents/";
 #elif defined(WIN32)
     return "./";
 #else
     if (const char *d = SDL_getenv("HOME")) {
         std::string s = d;
-        s.append("/");
 
+        s.append("/.solit");
+        ::mkdir(s.c_str(), 0755);
+
+        s.push_back('/');
         return s;
     }
     else
