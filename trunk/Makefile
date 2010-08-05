@@ -13,6 +13,9 @@ TARGET = solit
 
 all: iconbuild $(TARGET)
 
+dist: clean
+	tar czf solit.tar.gz *cpp *h *c *m images Makefile* Info.plist CMakeLists.txt iTunesMetadata.plist
+	
 iconbuild: iconbuild.cpp
 	g++ -o iconbuild iconbuild.cpp
 	rm -f images.cpp

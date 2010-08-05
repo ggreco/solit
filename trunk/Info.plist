@@ -6,10 +6,14 @@
     <string>Apple iPhone OS Application Signing</string>
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
+	<key>CFBundleDisplayName</key>
+	<string>Solit</string>    
+	<key>CFBundleName</key>
+	<string>Solit</string>    
     <key>CFBundleExecutable</key>
     <string>Solit</string>
     <key>CFBundleIdentifier</key>
-    <string>net.sourceforge.solit.apps.solit</string>
+    <string>net.sourceforge.solitgpl.solit</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundlePackageType</key>

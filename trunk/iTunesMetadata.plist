@@ -6,8 +6,6 @@
 	<string>test@test.com</string>
 	<key>purchaseDate</key>
 	<date>2010-04-04T04:04:04Z</date>
-	<key>artistId</key>
-	<integer>300163062</integer>
 	<key>artistName</key>
 	<string>GGSoft</string>
 	<key>copyright</key>
@@ -21,7 +19,7 @@
 	<key>genreId</key>
 	<integer>6014</integer>
 	<key>itemId</key>
-	<integer>376797399</integer>
+	<integer>99999999</integer>
 	<key>itemName</key>
 	<string>Solit</string>
 	<key>kind</key>
@@ -79,10 +77,6 @@
 			<integer>7015</integer>
 		</dict>
 	</array>
-	<key>vendorId</key>
-	<integer>200578</integer>
-	<key>versionRestrictions</key>
-	<integer>16843008</integer>
 </dict>
 </plist>
 
