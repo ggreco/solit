@@ -187,7 +187,11 @@ PressButton(const Point &p)
     if (!selection_.Empty() || status_ == PLAYING_VICTORY)
         return;
 
+    if (check_highlight(pos))
+        Update();
+
     if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
+
         if (!rows_[pos - Renderer::FirstRow].Empty() && !rows_[pos - Renderer::FirstRow].Get().Covered()) {
             std::pair<int, int> rowinfo = rend_->GetRowInfo();
             Row &r = rows_[pos - Renderer::FirstRow];
@@ -209,10 +213,7 @@ PressButton(const Point &p)
 
             Update();
 
-            rend_->Draw(selection_.First(), p);
-
-            if (selection_.Size() > 1)
-                rend_->Draw(selection_.Get(), Point(p.X(), p.Y() + 15));
+            draw_selection(p);
         }
     }
     else if (pos >= Renderer::FirstSeedPos && pos <= Renderer::LastSeedPos) {
@@ -220,7 +221,7 @@ PressButton(const Point &p)
             selection_.Add(seeds_[pos - Renderer::FirstSeedPos].Get(), seeds_[pos - Renderer::FirstSeedPos], pos);
             seeds_[pos - Renderer::FirstSeedPos].Remove();
             Update();
-            rend_->Draw(selection_.Get(), p);
+            draw_selection(p);
         }
     }
     else if (pos == Renderer::CardPos) {
@@ -228,7 +229,7 @@ PressButton(const Point &p)
             selection_.Add(cards_.Get(), cards_, pos);
             cards_.Remove();
             Update();
-            rend_->Draw(selection_.Get(), p);
+            draw_selection(p);
         }
     }
 
@@ -239,6 +240,7 @@ void KlondikeGame::
 ReleaseButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
+    rend_->Unhighlight();
 
     if (status_ == PLAYING_VICTORY || status_ == AUTOCOMPLETE) {
         Game::ReleaseButton(p);

@@ -136,8 +136,9 @@ public:
     void check_scores();
     void read_scores();
 
-
+    bool check_highlight(int pos);
     void startup();
+    void draw_selection(const Point &);
 
     virtual void serialize(Serializer& p) {
         p & status_;

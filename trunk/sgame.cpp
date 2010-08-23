@@ -103,7 +103,11 @@ PressButton(const Point &p)
     if (!selection_.Empty() || status_ == PLAYING_VICTORY)
         return;
 
+    if (check_highlight(pos))
+        Update();
+
     if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
+
         if (!rows_[pos - Renderer::FirstRow].Empty() && !rows_[pos - Renderer::FirstRow].Get().Covered()) {
             std::pair<int, int> rowinfo = rend_->GetRowInfo();
             Row &r = rows_[pos - Renderer::FirstRow];
@@ -132,11 +136,7 @@ PressButton(const Point &p)
             }
 
             Update();
-
-            rend_->Draw(selection_.First(), p);
-
-            if (selection_.Size() > 1)
-                rend_->Draw(selection_.Get(), Point(p.X(), p.Y() + 15));
+            draw_selection(p);
         }
     }
 
@@ -170,7 +170,9 @@ void SpiderGame::
 ReleaseButton(const Point &p)
 {
     int pos = rend_->GetPosition(p);
-	
+
+    rend_->Unhighlight();
+
     if (status_ == PLAYING_VICTORY) {
         Game::ReleaseButton(p);
 		return;
