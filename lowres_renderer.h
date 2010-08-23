@@ -41,7 +41,7 @@ class SdlRenderer : public Renderer
         Uint32 lastclick_;
         ResInfo &res_;
         int w_, h_;
-        SDL_Color white_, black_, background_;
+        SDL_Color white_, black_, background_, highlight_color_;
         SdlCardRenderer *card_rend_;
         SDL_Texture *widgets_[WIDGET_NUM];
 

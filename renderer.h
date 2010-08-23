@@ -85,7 +85,9 @@ class Renderer
         void PositionSeed(int id, const Point &p) { seed_positions_[id] = p; }
         void PositionColumn(int id, const Point &p) { column_positions_[id] = p; }
         void PositionDeck(const Point &p) { deck_position_ = p; }
-        
+        void Highlight(int col_id) { highlighted_ = col_id; }
+        int Highlighted() const { return highlighted_; }
+        void Unhighlight() { highlighted_ = -1; }
         virtual void Poll() = 0;
         virtual void Delay(int) = 0;
         virtual void Wait() = 0;
@@ -104,13 +106,17 @@ class Renderer
         virtual CardRenderer *GetCardRenderer()  = 0;
         virtual void DrawEmpty(const Point &p) = 0;
         Renderer(int cols, int seeds = -1, bool card_slot = false) :           
-            seeds_(seeds), columns_(cols), has_seeds_(seeds > 0),
-            has_cards_slot_(card_slot),
+            highlighted_(-1), seeds_(seeds), 
+            columns_(cols), has_seeds_(seeds > 0),
+            has_cards_slot_(card_slot), 
             action_(NULL) {
                 if (has_seeds_)
                     seed_positions_ = new Point[seeds_];
 
                 column_positions_ = new Point[columns_];
+                column_heights_ = new int[columns_];
+                for (int i = 0; i < columns_; ++i)
+                    column_heights_[i] = 0;
             };
 
         void MouseMove(const Point &p) { if (action_) action_->MouseMove(p); }
@@ -129,6 +135,7 @@ class Renderer
                 delete [] seed_positions_;
 
             delete [] column_positions_;
+            delete [] column_heights_;
         };
 
         int Seeds() const { return seeds_; }
@@ -141,9 +148,11 @@ class Renderer
         Point card_size_;
         Point *seed_positions_;
         Point *column_positions_;
+        int *column_heights_;
         Point screen_size_;
         Point spacing_;
         double x_scaling_, y_scaling_;
+        int highlighted_;
     private:
         int seeds_;
         int columns_;

@@ -23,6 +23,53 @@ Clear()
 	for (i = 0; i < Seeds(); i++)
         DrawRect(seed_positions_[i], card_size_, white_);
 
+    if (highlighted_ != -1) {
+        SDL_Rect r = {
+                        column_positions_[highlighted_].X() - spacing_.X() / 2,  // X
+                        column_positions_[highlighted_].Y() - spacing_.Y() / 2,  // Y
+                        card_size_.X() + spacing_.X(), // Width
+                        column_heights_[highlighted_] + spacing_.Y() // Height
+                     }; // W e H
+
+        SDL_SetRenderDrawColor(highlight_color_.r, highlight_color_.g, highlight_color_.b, highlight_color_.unused);
+        SDL_RenderFillRect(&r);
+
+        int start_y = column_positions_[highlighted_].Y() + column_heights_[highlighted_] + spacing_.Y() / 2;
+        int len = screen_size_.Y() - start_y;
+        float actual_b = highlight_color_.b;
+        float step = (float)highlight_color_.b / (float)len;
+        float actual_w = r.w;
+        float actual_x = r.x;
+        float w_step = (actual_w / 2.0f) / (float)len;
+
+        for (int i = 0; i < len; ++i) {
+            r.y = start_y + i;
+            r.h = 1;
+
+            actual_w -= w_step;
+            actual_x += w_step / 2.0f;
+            actual_b -= step;
+
+            if (actual_w <= 0.0f)
+                break;
+
+            // if two rows are equal I do them in a single blit
+            if ( ((int)actual_w) == ((int)(actual_w + w_step)) &&
+                 ((int)actual_b) == ((int)(actual_b + step)) ) {
+                i++;
+                r.h = 2;
+            }
+
+            r.x = actual_x;
+            r.w = actual_w;
+
+
+            SDL_SetRenderDrawColor(highlight_color_.r, highlight_color_.g, (unsigned char)actual_b, 
+                                   highlight_color_.unused);
+            SDL_RenderFillRect(&r);
+        }
+    }
+
     for (i = 0; i < WIDGET_NUM; i++) {
         if (widgets_[i]) {
             SDL_Rect dst;
@@ -234,6 +281,10 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
     memset(&white_, 255, sizeof(white_));
     memset(&black_, 0, sizeof(black_));
     black_.unused = SDL_ALPHA_OPAQUE;
+
+    // highlight color is like background with a blue component added
+    highlight_color_ = background_;
+    highlight_color_.b = 240;
 
     card_size_ = Point(res_.card_width, res_.card_height);
 

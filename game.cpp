@@ -132,17 +132,49 @@ KeyRelease(char key)
 	}
 }
 
-void Game::
-MouseMove(const Point &p)
+bool Game::
+check_highlight(int pos)
 {
-    if (!selection_.Empty()) {
-        Update();
+    bool need_update;
 
+    if (pos >= Renderer::FirstRow && pos <= Renderer::LastRow) {
+        pos -= Renderer::FirstRow;
+
+        need_update = (pos != rend_->Highlighted());
+
+        rend_->Highlight(pos);
+    }
+    else {
+        need_update = (rend_->Highlighted() != -1);
+        rend_->Unhighlight();
+    }
+
+    return need_update;
+}
+
+void Game::
+draw_selection(const Point &p) {
+    if (!selection_.Empty()) {
         rend_->Draw(selection_.First(), p );
 
         if (selection_.Size() > 1)
-            rend_->Draw(selection_.Get(), Point(p.X(), p.Y() + 15));
+            rend_->Draw(selection_.Get(), Point(p.X(), p.Y() + rend_->CardSize().Y()/3));
+    }
+}
 
+void Game::
+MouseMove(const Point &p)
+{
+    if (status_ == PLAYING_VICTORY)
+        return;
+
+	int pos = rend_->GetPosition(p);
+
+    bool need_draw = (check_highlight(pos) || !selection_.Empty());
+
+    if (need_draw) {
+        Update();
+        draw_selection(p);
         rend_->Update();
     }
 }
@@ -151,6 +183,8 @@ void Game::
 ReleaseButton(const Point &p)
 {
 	int pos = rend_->GetPosition(p);
+
+    rend_->Unhighlight();
 
 	if (pos >= Renderer::FirstWidget && pos <= Renderer::LastWidget) {
             pos -= Renderer::FirstWidget;

@@ -78,7 +78,9 @@ GetPosition(const Point &p)
                 return FirstSeedPos + i;
 
         for (i = 0; i < Columns(); ++i) {
-            if (inside(p, column_positions_[i], Point(card_size_.X(), screen_size_.Y())))
+            if (inside(p, 
+                        Point(column_positions_[i].X() - spacing_.X() / 2, column_positions_[i].Y()), // start position
+                        Point(card_size_.X() + spacing_.X(), screen_size_.Y() - column_positions_[i].Y()))) // size
                 return FirstRow + i;
         }
 
@@ -91,6 +93,8 @@ GetPosition(const Point &p)
 void Renderer::
 Draw(const Row &r, int pos)
 {
+    column_heights_[pos] = card_size_.Y();
+
     CardRenderer *cr = GetCardRenderer();
     Point p = column_positions_[pos];
 
@@ -99,10 +103,14 @@ Draw(const Row &r, int pos)
         
         cr->Draw(*it, p);
 
-        if (it->Covered())
+        if (it->Covered()) {
            p.Y( p.Y() + card_size_.Y() / 4);
-        else
+           column_heights_[pos] += card_size_.Y() / 4;
+        }
+        else {
            p.Y( p.Y() + card_size_.Y() / 3);
+           column_heights_[pos] += card_size_.Y() / 3;
+        }
     }
 }
 
