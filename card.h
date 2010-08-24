@@ -30,6 +30,7 @@ public:
 	CardColor Color() const { return ( (seed_ == Hearts || seed_ == Squares) ? Red : Black); }
     int Value() const { return value_; }
     SeedValue Seed() const { return (SeedValue)seed_; }
+    void Seed(SeedValue v) { seed_ = v; }
     bool Covered() const { return covered_; }
     void Covered(bool val) { covered_ = val; }
     void Deck(int d) { deck_ = d; }

@@ -45,6 +45,15 @@ SetupCards()
 {
     int cards = 0;
 
+    // let's change the deck to have only two seeds
+    for (CardIterator it = deck_.GetCards().begin(); 
+                      it != deck_.GetCards().end(); ++it) {
+        if (it->Seed() == Squares)
+            it->Seed(Hearts);
+        else if (it->Seed() == Pikes)
+            it->Seed(Flowers);
+    }
+
     while (cards < 54) {
         for (int i = 0; i < SPIDER_COLUMNS; i++) {
             Card card = deck_.GetCard();
