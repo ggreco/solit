@@ -17,8 +17,8 @@ Clear()
 {
     int i;
 
-    SDL_SetRenderDrawColor(background_.r, background_.g, background_.b, background_.unused);
-    SDL_RenderClear();
+    SDL_SetRenderDrawColor(renderer_, background_.r, background_.g, background_.b, background_.unused);
+    SDL_RenderClear(renderer_);
 
 	for (i = 0; i < Seeds(); i++)
         DrawRect(seed_positions_[i], card_size_, white_);
@@ -31,8 +31,9 @@ Clear()
                         column_heights_[highlighted_] + spacing_.Y() // Height
                      }; // W e H
 
-        SDL_SetRenderDrawColor(highlight_color_.r, highlight_color_.g, highlight_color_.b, highlight_color_.unused);
-        SDL_RenderFillRect(&r);
+        SDL_SetRenderDrawColor(renderer_, highlight_color_.r, highlight_color_.g, 
+                    highlight_color_.b, highlight_color_.unused);
+        SDL_RenderFillRect(renderer_, &r);
 
         int start_y = column_positions_[highlighted_].Y() + column_heights_[highlighted_] + spacing_.Y() / 2;
         int len = screen_size_.Y() - start_y;
@@ -64,9 +65,10 @@ Clear()
             r.w = actual_w;
 
 
-            SDL_SetRenderDrawColor(highlight_color_.r, highlight_color_.g, (unsigned char)actual_b, 
+            SDL_SetRenderDrawColor(renderer_, 
+                                   highlight_color_.r, highlight_color_.g, (unsigned char)actual_b, 
                                    highlight_color_.unused);
-            SDL_RenderFillRect(&r);
+            SDL_RenderFillRect(renderer_, &r);
         }
     }
 
@@ -80,7 +82,7 @@ Clear()
             dst.w = p.X();
             dst.h = p.Y();
 
-            SDL_RenderCopy(widgets_[i], NULL, &dst);
+            SDL_RenderCopy(renderer_, widgets_[i], NULL, &dst);
         }
     }
 }
@@ -90,8 +92,8 @@ DrawRect(const Point &pos, const Point &size, SDL_Color &color)
 {
     SDL_Rect r = { pos.X(), pos.Y(), size.X(), size.Y() };
 
-    SDL_SetRenderDrawColor(color.r, color.g, color.b, color.unused);
-    SDL_RenderFillRect(&r);
+    SDL_SetRenderDrawColor(renderer_, color.r, color.g, color.b, color.unused);
+    SDL_RenderFillRect(renderer_, &r);
 
     r.x++;
     r.y++;
@@ -99,14 +101,14 @@ DrawRect(const Point &pos, const Point &size, SDL_Color &color)
     r.w -= 2;
     r.h -= 2;
 
-    SDL_SetRenderDrawColor(background_.r, background_.g, background_.b, background_.unused);
-    SDL_RenderFillRect(&r);
+    SDL_SetRenderDrawColor(renderer_, background_.r, background_.g, background_.b, background_.unused);
+    SDL_RenderFillRect(renderer_, &r);
 }
 
 void SdlRenderer::
 Update()
 {
-    SDL_RenderPresent();    
+    SDL_RenderPresent(renderer_);    
 }
 
 void SdlRenderer::
@@ -183,35 +185,16 @@ load_image(const std::string &base)
 {
 	extern SDL_RWops *load_or_grab_image(const std::string &);
 	std::string path = std::string("./") + res_.prefix + "_" + base + ".bmp";
-    SDL_DisplayMode mode;
-    SDL_GetCurrentDisplayMode(&mode);
 
-//    std::cerr << "pixelformat: " << mode.format << '\n';
 	if (SDL_RWops *rw = load_or_grab_image(path)) {
         if (SDL_Surface *dest = SDL_LoadBMP_RW(rw, 1)) { // rwops is closed by loadbmp
-            int bpp;
-            Uint32  Rmask, Gmask, Bmask, Amask;
-            SDL_PixelFormatEnumToMasks(mode.format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
+            SDL_Texture *id = SDL_CreateTextureFromSurface(renderer_, dest);
 
-//            std::cerr << "bpp: " << bpp << '\n';
-//            std::cerr << "r:" << (void *)Rmask << " g:" << (void *)Gmask << " b:" << (void *)Bmask << '\n';
+            if (id == NULL)
+                std::cerr << "SDL Error: " << SDL_GetError() << '\n';
 
-            if (SDL_Surface *temp = SDL_CreateRGBSurface(0 , dest->w, dest->h, bpp,
-                        Rmask, Gmask, Bmask, Amask
-                        )) {
-                SDL_BlitSurface(dest, NULL, temp, NULL);
-                SDL_Texture *id = SDL_CreateTextureFromSurface(mode.format, temp);
-
-                if (id == 0)
-                    std::cerr << "SDL Error: " << SDL_GetError() << '\n';
-
-                SDL_SetTextureScaleMode(id, SDL_TEXTURESCALEMODE_FAST);
-
-                SDL_FreeSurface(temp);
-                SDL_FreeSurface(dest);
-                return id;
-            }
             SDL_FreeSurface(dest);
+            return id;
         }
 	}
 	return 0;
@@ -244,6 +227,7 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
     w_ = screen_size_.X();
     h_ = screen_size_.Y();
 
+#if 0
     int n = SDL_GetNumRenderDrivers();
     int selected = -1;
 
@@ -259,12 +243,10 @@ SdlRenderer(int type, int cols, int seeds, bool card_slot) :
                 selected = i;
     }
     std::cerr << "Selected: " << selected << '\n';
+#endif
 
-    if (SDL_CreateRenderer(screen_, selected, 0) == -1) 
-        throw std::string("Unable to create accelerated renderer");
-
-    if (SDL_SelectRenderer(screen_) == -1)
-        throw std::string("Unable to select render target");
+    if (!(renderer_ = SDL_CreateRenderer(screen_, -1 /*selected*/, 0))) 
+        throw std::string("Unable to create renderer");
 
 	if (!(widgets_[QUIT_GAME] = load_image("close") )) 
         throw std::string("Unable to load close image");
@@ -355,13 +337,14 @@ Draw(const Card &card, const Point &pos)
                    rend_.card_size_.Y() };
 
     if (card.Covered()) {
-        SDL_RenderCopy(back_, NULL, &r);
+        SDL_RenderCopy(rend_.renderer(), back_, NULL, &r);
         return;
     }
 
     // draw the black border of the card
-    SDL_SetRenderDrawColor(rend_.black_.r, rend_.black_.g, rend_.black_.b, rend_.black_.unused);
-    SDL_RenderFillRect(&r);
+    SDL_SetRenderDrawColor(rend_.renderer(), rend_.black_.r, rend_.black_.g, 
+                           rend_.black_.b, rend_.black_.unused);
+    SDL_RenderFillRect(rend_.renderer(), &r);
 
     r.x++;
     r.y++;
@@ -369,8 +352,9 @@ Draw(const Card &card, const Point &pos)
     r.h -= 2;
 
     // draw the white square
-    SDL_SetRenderDrawColor(rend_.white_.r, rend_.white_.g, rend_.white_.b, rend_.white_.unused);
-    SDL_RenderFillRect(&r);
+    SDL_SetRenderDrawColor(rend_.renderer(), rend_.white_.r, rend_.white_.g, 
+                           rend_.white_.b, rend_.white_.unused);
+    SDL_RenderFillRect(rend_.renderer(), &r);
 
     r.x = pos.X() + rend_.res_.spacing_x / 2 + 1;
     r.y = pos.Y() + rend_.res_.spacing_y;
@@ -381,13 +365,13 @@ Draw(const Card &card, const Point &pos)
                  14 * sw_, card.IsBlack() ? 0 : sh_, sw_, sh_ };
 
     // put the number on the top left
-    SDL_RenderCopy(source_, &s, &r);
+    SDL_RenderCopy(rend_.renderer(), source_, &s, &r);
 
     r.x = pos.X() + rend_.card_size_.X() - sw_ - rend_.res_.spacing_x / 2;
     r.y = pos.Y() + rend_.card_size_.Y() - sh_ - rend_.res_.spacing_y / 2;
 
     // and on the bottom right
-    SDL_RenderCopy(source_, &s, &r);
+    SDL_RenderCopy(rend_.renderer(), source_, &s, &r);
 
     if (card.IsRed())
         s.x = 15 * sw_ + ((card.Seed() == Hearts) ? 0 : sw_);
@@ -396,11 +380,11 @@ Draw(const Card &card, const Point &pos)
 
     r.x = pos.X() + rend_.card_size_.X() - sw_ - rend_.res_.spacing_x / 2;
     r.y = pos.Y() + rend_.res_.spacing_y;
-    SDL_RenderCopy(source_, &s, &r);
+    SDL_RenderCopy(rend_.renderer(), source_, &s, &r);
 
     r.x = pos.X() + rend_.res_.spacing_x;
     r.y = pos.Y() + rend_.card_size_.Y() - sh_ -  rend_.res_.spacing_y / 2;
-    SDL_RenderCopy(source_, &s, &r);
+    SDL_RenderCopy(rend_.renderer(), source_, &s, &r);
 
 }
 
