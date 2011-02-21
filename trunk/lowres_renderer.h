@@ -37,7 +37,8 @@ class SdlCardRenderer : public CardRenderer
 class SdlRenderer : public Renderer
 {
     private:
-        SDL_WindowID screen_;
+        SDL_Window *screen_;
+        SDL_Renderer *renderer_;
         Uint32 lastclick_;
         ResInfo &res_;
         int w_, h_;
@@ -56,6 +57,7 @@ class SdlRenderer : public Renderer
         void Delay(int ms) { SDL_Delay(ms); }
         void Poll();
         void Wait();
+        SDL_Renderer *renderer() { return renderer_; }
         SdlRenderer(int id, int cols, int seeds, bool card_slot);
         ~SdlRenderer() {};
         CardRenderer *GetCardRenderer() { return card_rend_; }
