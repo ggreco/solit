@@ -211,13 +211,22 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
     lastclick_(0), res_(ressize[id][res])
 {
     int i;
-
+    
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         throw std::string("Unable to initialize SDL.");
 
     for (i = 0; i < WIDGET_NUM; ++i)
         widgets_[i] = 0;
 
+// debug code to see pixel formats available on different platforms.
+    int available_displays = SDL_GetNumDisplayModes(0);
+
+    for (int i = 0; i < available_displays; ++i)  {
+        SDL_DisplayMode mode;
+        SDL_GetDisplayMode(0, i, &mode);
+        std::cerr << i << ") " << mode.w << 'x' << mode.h << '/' << SDL_GetPixelFormatName(mode.format) << '\n';
+    }
+    
     atexit(SDL_Quit);
 
     screen_size_ = Point(res_.screen_width, res_.screen_height);
@@ -225,9 +234,9 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
     x_scaling_ = res_.xscaling;
     y_scaling_ = res_.yscaling;
 
-    std::cerr << screen_size_.X() << ',' << screen_size_.Y() << '\n';
+    std::cerr << "Res:" << screen_size_.X() << 'x' << screen_size_.Y() << '\n';
     if (!(screen_ = SDL_CreateWindow("Solit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                     screen_size_.X(), screen_size_.Y(), 0)))
+                                     screen_size_.X(), screen_size_.Y(), SDL_WINDOW_SHOWN)))
         throw std::string("Unable to open display.");
 
     w_ = screen_size_.X();
