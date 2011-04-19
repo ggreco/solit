@@ -38,6 +38,9 @@ extern "C" int SDL_main(int argc, char *argv[])
             case SPIDER_ID:
         	    game = new SpiderGame(renderset);
                 break;
+            default:
+                std::cerr << "Unknown game " << gametype << "\n";
+                return 0;
         }
         if (game) {
     		game->Rend()->Update();

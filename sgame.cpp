@@ -4,11 +4,8 @@
 
 SpiderGame::
 SpiderGame(int res) :
-    Game(res + SET_NUMBER, SPIDER_COLUMNS)
+    Game(SPIDER_ID, res, SPIDER_COLUMNS)
 {
-    // spider is game 1
-    game_id_ = SPIDER_ID;
-
     Point pos(rend_->Spacing().X() / 2, 
             rend_->ScreenHeight() - rend_->CardSize().Y() - rend_->Spacing().Y());
 
@@ -73,6 +70,8 @@ SetupCards()
 void SpiderGame::
 Restart()
 {
+    Save(); // to be able to load if the user push "undo"
+
 	for (int j = 0; j < rend_->Columns(); j++)
 		rows_[j].Clear();
 

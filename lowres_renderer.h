@@ -58,7 +58,7 @@ class SdlRenderer : public Renderer
         void Poll();
         void Wait();
         SDL_Renderer *renderer() { return renderer_; }
-        SdlRenderer(int id, int cols, int seeds, bool card_slot);
+        SdlRenderer(int id, int res, int cols, int seeds, bool card_slot);
         ~SdlRenderer() {};
         CardRenderer *GetCardRenderer() { return card_rend_; }
 

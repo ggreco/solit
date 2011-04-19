@@ -50,13 +50,15 @@ void Game::read_scores()
     }
 }
 
-Game::Game(int id, int cols, int seeds, bool card_slot ) :
-    status_(PLAYING), deck_(2)
+Game::Game(int id, int res, int cols, int seeds, bool card_slot ) :
+    status_(PLAYING), deck_(2), restarted_(false)
 {
+    game_id_ = id;
+
     for (int i = 0; i < NUMBER_OF_GAMES; i++)
         scores_[i] = std::pair<int, int>(0, 0);
 
-    rend_ = new SdlRenderer(id, cols, seeds, card_slot);
+    rend_ = new SdlRenderer(id, res, cols, seeds, card_slot);
 
     ::srand(::time(NULL));
     rend_->SetActionManager(this);
@@ -296,7 +298,13 @@ Save() {
 void Game::
 UndoMove()
 {
-    moves_.Revert();
+    if (restarted_ && moves_.Empty())
+        startup();
+    else
+        moves_.Revert();
+
+    restarted_ = false;
+
     Update();
     rend_->Update();
 }
@@ -330,12 +338,14 @@ Restart()
 
     status_ = PLAYING;
     rend_->Update();
+
+    restarted_ = true;
 }
 
 void MoveList::
 Revert()
 {
-    if (moves_.empty())
+    if (moves_.empty()) 
         return;
 
     Move &last = moves_.top();
