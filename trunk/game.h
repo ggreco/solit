@@ -59,6 +59,7 @@ public:
 
     void Revert();
 
+    bool Empty() const { return moves_.empty(); }
     size_t Size() const { return moves_.size(); }
     void Clear() { while(!moves_.empty()) moves_.pop(); }
     void Add(Stackable &from, int srcpos, Stackable &to, int destpos, const Card &c, int link = -1) {
@@ -102,6 +103,8 @@ protected:
 
     static HighScoreMap scores_;
 
+    bool restarted_;
+
     virtual bool IsCompleted() = 0;
 
     void MouseMove(const Point &);
@@ -129,7 +132,7 @@ public:
    	void Victory(Stackable &, int, int);
     virtual void Update() = 0;
     virtual void SetupCards() = 0;
-    Game(int rend_id, int columns, int seeds = -1, bool card_slot = false);
+    Game(int game_id, int res_id, int columns, int seeds = -1, bool card_slot = false);
     virtual ~Game() {};
 
     static void update_scores();

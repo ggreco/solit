@@ -9,13 +9,13 @@ CXX=$(CROSSDIR)/arm-apple-darwin9-g++
 
 export CODESIGN_ALLOCATE
 
-LDFLAGS = -L/home/gabry/no-backup/SDL-iphone/lib -lSDLiPhoneOS -bind_at_load \
+LDFLAGS = -F../frameworks -framework SDL -bind_at_load \
           -framework Foundation -framework CoreFoundation -framework UIKit \
           -framework OpenGLES -framework AudioToolbox -framework CoreAudio \
           -framework CoreGraphics -framework QuartzCore
           
 
-CXXFLAGS = -Os -Wall -I/home/gabry/no-backup/SDL-iphone/include -DXIPHONE
+CXXFLAGS = -Os -Wall -I../frameworks/SDL.framework/Headers/ -DXIPHONE
 TARGET = Solit
 
 all: $(TARGET)

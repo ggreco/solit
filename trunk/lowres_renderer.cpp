@@ -3,13 +3,19 @@
 #include <iostream>
 #include <math.h>
 
-ResInfo res[] = {
-    {320, 240, 20, 30, 2, 2, 8, 8, 1.0, 1.0, "low"},
-    {480, 320, 26, 45, 6, 3, 8, 8, 1.5, 1.33333, "low"},
-    {640, 480, 40, 60, 6, 4, 13, 16, 2.0, 2.0, "med"},
-    {240, 320, 20, 30, 4, 2, 8, 8, 1.0, 1.0, "low"},
-    {320, 480, 26, 45, 6, 3, 8, 8, 1.33333, 1.5, "low"},
-    {480, 640, 40, 60, 8, 4, 13, 16, 2.0, 2.0, "med"},
+ResInfo ressize[2][4] = {
+    {
+        {320, 240, 20, 30, 2, 2, 8, 8, 1.0, 1.0, "low"},
+        {480, 320, 26, 45, 6, 3, 8, 8, 1.5, 1.33333, "low"},
+        {640, 480, 40, 60, 6, 4, 13, 16, 2.0, 2.0, "med"},
+        {960, 640, 52, 90, 12, 6, 13, 16, 3.0, 2.66666, "med"},
+    },
+    {
+        {240, 320, 20, 30, 4, 2, 8, 8, 1.0, 1.0, "low"}, // pocketpc
+        {320, 480, 26, 45, 6, 3, 8, 8, 1.33333, 1.5, "low"}, // iphone
+        {480, 640, 40, 60, 8, 4, 13, 16, 2.0, 2.0, "med"}, // pc
+        {640, 960, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "med"}, // iphone 4
+    }
 };
 
 void SdlRenderer::
@@ -200,9 +206,9 @@ load_image(const std::string &base)
 	return 0;
 }
 SdlRenderer::
-SdlRenderer(int type, int cols, int seeds, bool card_slot) :
+SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
     Renderer(cols, seeds, card_slot),
-    lastclick_(0), res_(res[type])
+    lastclick_(0), res_(ressize[id][res])
 {
     int i;
 

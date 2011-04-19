@@ -6,10 +6,10 @@
 
 KlondikeGame::
 KlondikeGame(int res) :
-    Game(res, KLONDIKE_COLUMNS, KLONDIKE_TOTAL_SEEDS, true)
+    Game(KLONDIKE_ID, res, KLONDIKE_COLUMNS, KLONDIKE_TOTAL_SEEDS, true)
 {
     // klondike is game 0
-    game_id_ = KLONDIKE_ID;
+    
 
     rend_->PositionWidget(QUIT_GAME, 
             Point(rend_->ScreenWidth() - 
@@ -71,6 +71,8 @@ SetupCards()
 void KlondikeGame::
 Restart()
 {
+    Save(); // to be able to load if the user push "undo"
+
 	cards_.Clear();
 
 	for (int i = 0; i < rend_->Seeds(); i++)

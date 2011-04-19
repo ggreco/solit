@@ -59,7 +59,6 @@ enum WidgetId {NEW_GAME, QUIT_GAME, UNDO_MOVE, HIGHSCORE, WIDGET_NUM};
 
 #define MAX_TOTAL_SEEDS 24
 #define MAX_TOTAL_COLUMNS 32
-#define SET_NUMBER 3 
 
 class Renderer
 {
