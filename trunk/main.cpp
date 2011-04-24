@@ -18,7 +18,11 @@ extern "C" int SDL_main(int argc, char *argv[])
 #endif
 {
 	try {
-        int gametype = SPIDER_ID; // spider = 1, klondike = 0
+#ifdef ISKLONDIKE
+        int gametype = KLONDIKE_ID; 
+#else
+        int gametype = SPIDER_ID; 
+#endif
         int renderset = RENDERER_SET;
 
 #ifndef XIPHONE

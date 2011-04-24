@@ -2,19 +2,23 @@
 #include <string>
 #include <iostream>
 #include <math.h>
+//#include "SDL_opengles.h"
 
-ResInfo ressize[2][4] = {
+ResInfo ressize[2][5] = {
     {
         {320, 240, 20, 30, 2, 2, 8, 8, 1.0, 1.0, "low"},
         {480, 320, 26, 45, 6, 3, 8, 8, 1.5, 1.33333, "low"},
         {640, 480, 40, 60, 6, 4, 13, 16, 2.0, 2.0, "med"},
         {960, 640, 52, 90, 12, 6, 13, 16, 3.0, 2.66666, "med"},
+        {1024, 768, 64, 96, 16 , 8, 13, 16, 3.2 , 3.2 ,"med"}
+        
     },
     {
         {240, 320, 20, 30, 4, 2, 8, 8, 1.0, 1.0, "low"}, // pocketpc
         {320, 480, 26, 45, 6, 3, 8, 8, 1.33333, 1.5, "low"}, // iphone
         {480, 640, 40, 60, 8, 4, 13, 16, 2.0, 2.0, "med"}, // pc
         {640, 960, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "med"}, // iphone 4
+        {768, 1024, 64, 96, 13 , 8, 13, 16, 2.66666 , 3.2 ,"med"}
     }
 };
 
@@ -161,6 +165,12 @@ ParseEvent(const SDL_Event &e)
                 case SDL_WINDOWEVENT_CLOSE:
                     Renderer::OnQuit();
                     break;
+                case SDL_WINDOWEVENT_RESIZED: {
+                        int x, y;
+                    SDL_GetWindowSize(screen_, &x, &y);
+                        std::cerr << "Received " << x << "x" << y << "\n";
+                    }
+                    break;
                 case SDL_WINDOWEVENT_EXPOSED:
                     Renderer::Exposed(); 
                     break;
@@ -205,6 +215,17 @@ load_image(const std::string &base)
 	}
 	return 0;
 }
+
+#ifndef XIPHONE
+#if defined(ISKLONDIKE)
+#define SDL_FLAGS SDL_WINDOW_FULLSCREEN|SDL_WINDOW_NOFRAME
+#else
+#define SDL_FLAGS SDL_WINDOW_FULLSCREEN
+#endif
+#else
+#define SDL_FLAGS 0
+#endif
+
 SdlRenderer::
 SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
     Renderer(cols, seeds, card_slot),
@@ -221,10 +242,22 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
 // debug code to see pixel formats available on different platforms.
     int available_displays = SDL_GetNumDisplayModes(0);
 
+    SDL_DisplayMode best;
+    
     for (int i = 0; i < available_displays; ++i)  {
         SDL_DisplayMode mode;
         SDL_GetDisplayMode(0, i, &mode);
         std::cerr << i << ") " << mode.w << 'x' << mode.h << '/' << SDL_GetPixelFormatName(mode.format) << '\n';
+        
+#ifdef XIPHONE
+        for (int j = 0; j < 5; ++j)
+            if (mode.w == ressize[id][j].screen_width &&
+                mode.h == ressize[id][j].screen_height &&
+                mode.w != 640) { // iphone4 fix
+                res_ = ressize[id][j];
+                best = mode;
+            }
+#endif  
     }
     
     atexit(SDL_Quit);
@@ -236,9 +269,10 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
 
     std::cerr << "Res:" << screen_size_.X() << 'x' << screen_size_.Y() << '\n';
     if (!(screen_ = SDL_CreateWindow("Solit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                     screen_size_.X(), screen_size_.Y(), SDL_WINDOW_SHOWN)))
+                                     screen_size_.X(), screen_size_.Y(), SDL_FLAGS)))
         throw std::string("Unable to open display.");
 
+    SDL_SetWindowDisplayMode(screen_, &best);
     w_ = screen_size_.X();
     h_ = screen_size_.Y();
 
@@ -263,6 +297,15 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
     if (!(renderer_ = SDL_CreateRenderer(screen_, -1 /*selected*/, 0))) 
         throw std::string("Unable to create renderer");
 
+#ifdef XIPHONE
+//    glViewport(0, 0, 320, 480);
+//    glPushMatrix();
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//    glRotatef(90, 0, 0, 1);
+//    glOrthof(0.0, (GLfloat) 480, (GLfloat) 320, 0.0, 0, 100.0f);
+#endif
+    
 	if (!(widgets_[QUIT_GAME] = load_image("close") )) 
         throw std::string("Unable to load close image");
 
