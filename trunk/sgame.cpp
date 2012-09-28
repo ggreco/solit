@@ -14,7 +14,7 @@ SpiderGame(int res) :
     pos.Y(rend_->Spacing().Y());
 
 #ifdef XIPHONE
-    pos.AddY(20);
+    pos.AddY(rend_->ScreenWidth() == 640 || rend_->ScreenWidth() == 1536 ? 40 : 20);
 #endif
 
     for (int i = 0; i < rend_->Columns(); i++) {
@@ -35,6 +35,7 @@ SpiderGame(int res) :
     rend_->PositionWidget(UNDO_MOVE, pos);
 
     Game::startup();
+    Update();
 }
 
 void SpiderGame::
