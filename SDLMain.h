@@ -5,7 +5,7 @@
     Feel free to customize this file to suit your needs
 */
 
-#import <Cocoa/Cocoa.h>
+#import <UIKit/UIKit.h>
 
 @interface SDLMain : NSObject
 @end

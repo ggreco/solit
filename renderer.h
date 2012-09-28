@@ -76,10 +76,7 @@ class Renderer
 
         const Point &CardSize() const { return card_size_; }
         const Point &Spacing() const { return spacing_; }
-        void PositionWidget(WidgetId id, const Point &p) {
-            widget_positions_[id].set(p.X(), p.Y(),
-                    WidgetWidth(id), WidgetHeight(id));
-        }
+        void PositionWidget(WidgetId id, const Point &p);
         void PositionCards(const Point &p) { cards_position_ = p; }
         void PositionSeed(int id, const Point &p) { seed_positions_[id] = p; }
         void PositionColumn(int id, const Point &p) { column_positions_[id] = p; }

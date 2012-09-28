@@ -3,7 +3,7 @@ IMGS = images/low_back.bmp images/low_close.bmp images/low_new.bmp \
 	   images/med_close.bmp images/med_new.bmp images/med_seeds.bmp \
 	   images/med_undo.bmp
 
-SDLCONFIG = /home/gabry/no-backup/bin/sdl-config
+SDLCONFIG = /home/gabry/no-backup/bin/sdl2-config
 
 OBJS = main.o lowres_renderer.o deck.o game.o renderer.o card.o \
        images.o sgame.o kgame.o serializer.o streamer.o
