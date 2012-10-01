@@ -38,8 +38,6 @@ void Renderer::
 PositionWidget(WidgetId id, const Point &p)
 {
     widget_positions_[id].set(p.X(), p.Y(), WidgetWidth(id), WidgetHeight(id));
-    std::cerr << "Widget " << id << " at: " << p.X() << ',' << p.Y() << " size: ("
-              << WidgetWidth(id) << 'x' << WidgetHeight(id) << ")\n";
 }
 void Renderer::
 Move(const Card &c, int pos)
@@ -65,8 +63,6 @@ Move(const Card &c, int pos)
 int Renderer::
 GetPosition(const Point &p)
 {
-    std::cerr << "Touch in " << p.X()<< "," << p.Y() << '\n';
-    
     if (inside(p, deck_position_, card_size_))
         return DeckPos;
     else if (has_cards_slot_ && inside(p, cards_position_, card_size_))

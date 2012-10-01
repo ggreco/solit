@@ -6,16 +6,18 @@ SpiderGame::
 SpiderGame(int res) :
     Game(SPIDER_ID, res, SPIDER_COLUMNS)
 {
+    int delta_y = 0;
     Point pos(rend_->Spacing().X() / 2, 
             rend_->ScreenHeight() - rend_->CardSize().Y() - rend_->Spacing().Y());
 
     rend_->PositionDeck(pos);
 
-    pos.Y(rend_->Spacing().Y());
-
 #ifdef XIPHONE
-    pos.AddY(rend_->ScreenWidth() == 640 || rend_->ScreenWidth() == 1536 ? 40 : 20);
+    delta_y = rend_->ScreenWidth() == 640 || rend_->ScreenWidth() == 1536 ? 40 : 20;
 #endif
+    pos.Y(rend_->Spacing().Y() + delta_y);
+
+
 
     for (int i = 0; i < rend_->Columns(); i++) {
         rend_->PositionColumn(i, pos); 
