@@ -9,17 +9,17 @@ ResInfo ressize[2][6] = {
         {320, 240, 20, 30, 2, 2, 8, 8, 1.0, 1.0, "low"},
         {480, 320, 26, 45, 6, 3, 8, 8, 1.5, 1.33333, "low"},
         {640, 480, 40, 60, 6, 4, 13, 16, 2.0, 2.0, "med"},
-        {960, 640, 52, 90, 12, 6, 13, 16, 3.0, 2.66666, "med"},
-        {1024, 768, 64, 96, 16 , 8, 13, 16, 3.2 , 3.2 ,"med"},
-        {1136, 640, 64, 90, 16 , 8, 13, 16, 3.2 , 3.0 ,"med"}
+        {960, 640, 52, 90, 12, 6, 13, 16, 3.0, 2.66666, "high"},
+        {1024, 768, 64, 96, 16 , 8, 13, 16, 3.2 , 3.2 ,"high"},
+        {1136, 640, 64, 90, 16 , 8, 13, 16, 3.2 , 3.0 ,"high"}
     },
     {
         {240, 320, 20, 30, 4, 2, 8, 8, 1.0, 1.0, "low"}, // pocketpc
         {320, 480, 26, 45, 6, 3, 8, 8, 1.33333, 1.5, "low"}, // iphone
         {480, 640, 40, 60, 8, 4, 13, 16, 2.0, 2.0, "med"}, // pc
-        {640, 960, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "med"}, // iphone 4
-        {768, 1024, 64, 96, 13 , 8, 13, 16, 2.66666 , 3.2 ,"med"},
-        {640, 1136, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "med"}
+        {640, 960, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "high"}, // iphone 4
+        {768, 1024, 64, 96, 13 , 8, 13, 16, 2.66666 , 3.2 ,"high"},
+        {640, 1136, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "high"}
     }
 };
 
@@ -134,6 +134,9 @@ Poll()
 void SdlRenderer::
 ParseEvent(const SDL_Event &e)
 {
+#ifdef XIPHONE
+    int delta_y = w_ == 640 ? 40 : 20;
+#endif
     switch (e.type) {
         case SDL_QUIT:
             Renderer::OnQuit();
@@ -145,16 +148,16 @@ ParseEvent(const SDL_Event &e)
             Renderer::KeyRelease(e.key.keysym.sym);
             break;
         case SDL_MOUSEMOTION:
-            Renderer::MouseMove(Point(e.motion.x, e.motion.y));
+            Renderer::MouseMove(Point(e.motion.x, e.motion.y + delta_y));
             break;
         case SDL_MOUSEBUTTONDOWN:
-            Renderer::PressButton(Point(e.button.x, e.button.y));
+            Renderer::PressButton(Point(e.button.x, e.button.y + delta_y));
             break;                    
         case SDL_MOUSEBUTTONUP:
-            Renderer::ReleaseButton(Point(e.button.x, e.button.y));
+            Renderer::ReleaseButton(Point(e.button.x, e.button.y + delta_y));
 
             if ((SDL_GetTicks() - lastclick_) < 300) {
-                Renderer::DoubleClick(Point(e.button.x, e.button.y));
+                Renderer::DoubleClick(Point(e.button.x, e.button.y + delta_y));
                 lastclick_ = 0;
             }
             else
@@ -168,7 +171,7 @@ ParseEvent(const SDL_Event &e)
                     break;
                 case SDL_WINDOWEVENT_RESIZED: {
                         int x, y;
-                    SDL_GetWindowSize(screen_, &x, &y);
+                        SDL_GetWindowSize(screen_, &x, &y);
                         std::cerr << "Received " << x << "x" << y << "\n";
                     }
                     break;
@@ -256,10 +259,10 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
                                      screen_size_.X(), screen_size_.Y(), 0)))
         throw std::string("Unable to open display.");
 
-    w_ = screen_size_.X();
-    h_ = screen_size_.Y();
+    SDL_GetWindowSize(screen_, &w_, &h_);
+//    std::cerr << "Window size set to: " << w_ << 'x' << h_ << '\n';
 
-    if (!(renderer_ = SDL_CreateRenderer(screen_, -1 /*selected*/, 0))) 
+    if (!(renderer_ = SDL_CreateRenderer(screen_, -1 /*selected*/, 0)))
         throw std::string("Unable to create renderer");
     
 	if (!(widgets_[QUIT_GAME] = load_image("close") )) 
