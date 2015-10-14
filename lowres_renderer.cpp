@@ -4,22 +4,24 @@
 #include <math.h>
 //#include "SDL_opengles.h"
 
-ResInfo ressize[2][6] = {
+ResInfo ressize[2][7] = {
     {
         {320, 240, 20, 30, 2, 2, 8, 8, 1.0, 1.0, "low"},
         {480, 320, 26, 45, 6, 3, 8, 8, 1.5, 1.33333, "low"},
         {640, 480, 40, 60, 6, 4, 13, 16, 2.0, 2.0, "med"},
         {960, 640, 52, 90, 12, 6, 13, 16, 3.0, 2.66666, "high"},
         {1024, 768, 64, 96, 16 , 8, 13, 16, 3.2 , 3.2 ,"high"},
-        {1136, 640, 64, 90, 16 , 8, 13, 16, 3.2 , 3.0 ,"high"}
+        {1136, 640, 64, 90, 16 , 8, 13, 16, 3.2 , 3.0 ,"high"},
+        {2048, 1536, 64, 90, 16 , 8, 13, 16, 3.2 , 3.0 ,"high"}
     },
     {
         {240, 320, 20, 30, 4, 2, 8, 8, 1.0, 1.0, "low"}, // pocketpc
         {320, 480, 26, 45, 6, 3, 8, 8, 1.33333, 1.5, "low"}, // iphone
         {480, 640, 40, 60, 8, 4, 13, 16, 2.0, 2.0, "med"}, // pc
         {640, 960, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "high"}, // iphone 4
-        {768, 1024, 64, 96, 13 , 8, 13, 16, 2.66666 , 3.2 ,"high"},
-        {640, 1136, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "high"}
+        {768, 1024, 64, 96, 13 , 8, 13, 16, 2.66666 , 3.2 ,"high"}, // ipad
+        {640, 1136, 52, 90, 12, 6, 13, 16, 2.66666, 3.0, "high"}, // iphone 5
+        {1536, 2048, 128, 192, 26, 16, 13, 16, 5.33333, 6.4, "high"} // new ipad
     }
 };
 
@@ -28,7 +30,7 @@ Clear()
 {
     int i;
 
-    SDL_SetRenderDrawColor(renderer_, background_.r, background_.g, background_.b, background_.unused);
+    SDL_SetRenderDrawColor(renderer_, background_.r, background_.g, background_.b, background_.a);
     SDL_RenderClear(renderer_);
 
 	for (i = 0; i < Seeds(); i++)
@@ -43,7 +45,7 @@ Clear()
                      }; // W e H
 
         SDL_SetRenderDrawColor(renderer_, highlight_color_.r, highlight_color_.g, 
-                    highlight_color_.b, highlight_color_.unused);
+                    highlight_color_.b, highlight_color_.a);
         SDL_RenderFillRect(renderer_, &r);
 
         int start_y = column_positions_[highlighted_].Y() + column_heights_[highlighted_] + spacing_.Y() / 2;
@@ -78,7 +80,7 @@ Clear()
 
             SDL_SetRenderDrawColor(renderer_, 
                                    highlight_color_.r, highlight_color_.g, (unsigned char)actual_b, 
-                                   highlight_color_.unused);
+                                   highlight_color_.a);
             SDL_RenderFillRect(renderer_, &r);
         }
     }
@@ -103,7 +105,7 @@ DrawRect(const Point &pos, const Point &size, SDL_Color &color)
 {
     SDL_Rect r = { pos.X(), pos.Y(), size.X(), size.Y() };
 
-    SDL_SetRenderDrawColor(renderer_, color.r, color.g, color.b, color.unused);
+    SDL_SetRenderDrawColor(renderer_, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer_, &r);
 
     r.x++;
@@ -112,7 +114,7 @@ DrawRect(const Point &pos, const Point &size, SDL_Color &color)
     r.w -= 2;
     r.h -= 2;
 
-    SDL_SetRenderDrawColor(renderer_, background_.r, background_.g, background_.b, background_.unused);
+    SDL_SetRenderDrawColor(renderer_, background_.r, background_.g, background_.b, background_.a);
     SDL_RenderFillRect(renderer_, &r);
 }
 
@@ -134,9 +136,6 @@ Poll()
 void SdlRenderer::
 ParseEvent(const SDL_Event &e)
 {
-#ifdef XIPHONE
-    int delta_y = w_ == 640 ? 40 : 20;
-#endif
     switch (e.type) {
         case SDL_QUIT:
             Renderer::OnQuit();
@@ -148,16 +147,17 @@ ParseEvent(const SDL_Event &e)
             Renderer::KeyRelease(e.key.keysym.sym);
             break;
         case SDL_MOUSEMOTION:
-            Renderer::MouseMove(Point(e.motion.x, e.motion.y + delta_y));
+            Renderer::MouseMove(Point(e.motion.x * ws_, e.motion.y * hs_));
             break;
         case SDL_MOUSEBUTTONDOWN:
-            Renderer::PressButton(Point(e.button.x, e.button.y + delta_y));
+            std::cerr << "Click:" << (e.button.x * ws_) << ',' << (e.button.y *hs_)<< '\n';
+            Renderer::PressButton(Point(e.button.x * ws_, e.button.y * hs_));
             break;                    
         case SDL_MOUSEBUTTONUP:
-            Renderer::ReleaseButton(Point(e.button.x, e.button.y + delta_y));
+            Renderer::ReleaseButton(Point(e.button.x * ws_, e.button.y * hs_));
 
             if ((SDL_GetTicks() - lastclick_) < 300) {
-                Renderer::DoubleClick(Point(e.button.x, e.button.y + delta_y));
+                Renderer::DoubleClick(Point(e.button.x * ws_, e.button.y * hs_));
                 lastclick_ = 0;
             }
             else
@@ -237,7 +237,21 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
         SDL_GetDisplayMode(0, i, &mode);
         std::cerr << i << ") " << mode.w << 'x' << mode.h << '/' << SDL_GetPixelFormatName(mode.format) << '\n';
         
-        for (int j = 0; j < 6; ++j)
+#ifdef XIPHONE
+        if (mode.h == 568) {
+            res_ = ressize[id][5];
+            break;
+        }
+        else if (mode.h == 1024) {
+            res_ = ressize[id][4];
+            break;
+        }
+        else if (mode.h == 480) {
+            res_ = ressize[id][3];
+            break;
+        }
+#else
+        for (int j = 0; j < sizeof(ressize[0])/sizeof(ressize[0][0]); ++j)
             if (mode.w == ressize[id][j].screen_width &&
                 mode.h == ressize[id][j].screen_height) {
                 if (!found || res_.screen_width < mode.w) {
@@ -245,6 +259,7 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
                     found = true;
                 }
             }
+#endif
     }
     
     atexit(SDL_Quit);
@@ -256,11 +271,11 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
 
     std::cerr << "Res:" << screen_size_.X() << 'x' << screen_size_.Y() << '\n';
     if (!(screen_ = SDL_CreateWindow("Solit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                     screen_size_.X(), screen_size_.Y(), 0)))
+                                     screen_size_.X(), screen_size_.Y(), SDL_WINDOW_ALLOW_HIGHDPI)))
         throw std::string("Unable to open display.");
 
     SDL_GetWindowSize(screen_, &w_, &h_);
-//    std::cerr << "Window size set to: " << w_ << 'x' << h_ << '\n';
+    std::cerr << "Window size set to: " << w_ << 'x' << h_ << '\n';
 
     if (!(renderer_ = SDL_CreateRenderer(screen_, -1 /*selected*/, 0)))
         throw std::string("Unable to create renderer");
@@ -276,10 +291,17 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
 
     card_rend_ = new SdlCardRenderer(".", *this);
 
-    background_.r = 0; background_.g = 200; background_.b = 0; background_.unused = SDL_ALPHA_OPAQUE;
+    int w, h;
+    SDL_GetRendererOutputSize(renderer_, &w, &h);
+
+    ws_ = (float)w / (float)w_;
+    hs_ = (float)h / (float)h_;
+
+    std::cerr << "Renderer output size: " << w << 'x' << h << '\n';
+    background_.r = 0; background_.g = 200; background_.b = 0; background_.a = SDL_ALPHA_OPAQUE;
     memset(&white_, 255, sizeof(white_));
     memset(&black_, 0, sizeof(black_));
-    black_.unused = SDL_ALPHA_OPAQUE;
+    black_.a = SDL_ALPHA_OPAQUE;
 
     // highlight color is like background with a blue component added
     highlight_color_ = background_;
@@ -360,7 +382,7 @@ Draw(const Card &card, const Point &pos)
 
     // draw the black border of the card
     SDL_SetRenderDrawColor(rend_.renderer(), rend_.black_.r, rend_.black_.g, 
-                           rend_.black_.b, rend_.black_.unused);
+                           rend_.black_.b, rend_.black_.a);
     SDL_RenderFillRect(rend_.renderer(), &r);
 
     r.x++;
@@ -370,7 +392,7 @@ Draw(const Card &card, const Point &pos)
 
     // draw the white square
     SDL_SetRenderDrawColor(rend_.renderer(), rend_.white_.r, rend_.white_.g, 
-                           rend_.white_.b, rend_.white_.unused);
+                           rend_.white_.b, rend_.white_.a);
     SDL_RenderFillRect(rend_.renderer(), &r);
 
     r.x = pos.X() + rend_.res_.spacing_x / 2 + 1;

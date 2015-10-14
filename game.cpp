@@ -60,7 +60,7 @@ Game::Game(int id, int res, int cols, int seeds, bool card_slot ) :
 
     rend_ = new SdlRenderer(id, res, cols, seeds, card_slot);
 
-    ::srand(::time(NULL));
+    ::srand((int)::time(NULL));
     rend_->SetActionManager(this);
 
     deck_.Deal();
@@ -249,7 +249,8 @@ ScoreName() {
 std::string Game::
 DirName() {
 #ifdef XIPHONE
-    return "../Documents/";
+    std::string path = SDL_GetBasePath();
+    return path + "/../Documents/";
 #elif defined(WIN32)
     return "./";
 #else

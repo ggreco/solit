@@ -42,6 +42,7 @@ class SdlRenderer : public Renderer
         Uint32 lastclick_;
         ResInfo &res_;
         int w_, h_;
+        float ws_, hs_; // scaling tra pixel e "punti"
         SDL_Color white_, black_, background_, highlight_color_;
         SdlCardRenderer *card_rend_;
         SDL_Texture *widgets_[WIDGET_NUM];
@@ -69,18 +70,18 @@ class SdlRenderer : public Renderer
             SDL_QueryTexture(widgets_[id], NULL, NULL, &w, &h);
             return Point(w, h);
         }
-        size_t WidgetWidth(WidgetId id) const { 
+        int WidgetWidth(WidgetId id) const { 
             int w, h;
             SDL_QueryTexture(widgets_[id], NULL, NULL, &w, &h);
             return w; 
         }
-        size_t WidgetHeight(WidgetId id) const { 
+        int WidgetHeight(WidgetId id) const { 
             int w, h;
             SDL_QueryTexture(widgets_[id], NULL, NULL, &w, &h);
             return h; 
         }
-        size_t ScreenWidth() const { return w_; }
-        size_t ScreenHeight() const { return h_; }
+        int ScreenWidth() const { return w_; }
+        int ScreenHeight() const { return h_; }
 };
 
 #endif

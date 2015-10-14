@@ -1,0 +1,32 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "a317ef73-cb4e-4706-9428-a551bf037579++505",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "a317ef73-cb4e-4706-9428-a551bf037579++505" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "a317ef73-cb4e-4706-9428-a551bf037579++505" : 0,
+    "FD4E9A6F588D13879065FBFB1A4565A2DB1B3914" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "5C5E4246-32D7-42C6-9B9F-CE08E8973C1B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "a317ef73-cb4e-4706-9428-a551bf037579++505" : "solitgpl\/",
+    "FD4E9A6F588D13879065FBFB1A4565A2DB1B3914" : "sdl-ios-framework\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "spidersolit",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "spidersolit\/spidersolit.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/manifest\/sdl-ios-framework.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "FD4E9A6F588D13879065FBFB1A4565A2DB1B3914"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/solitgpl.svn.sourceforge.net\/svnroot\/solitgpl",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "a317ef73-cb4e-4706-9428-a551bf037579++505"
+    }
+  ]
+}
