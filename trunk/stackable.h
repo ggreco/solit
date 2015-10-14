@@ -18,7 +18,7 @@ protected:
         s & cards_;
     }
 public:
-    int Size() const { return cards_.size(); }
+    int Size() const { return (int)cards_.size(); }
 	void Clear() { cards_.clear(); }
     bool Empty() const { return cards_.empty(); }
     Cards &GetCards() { return cards_; }

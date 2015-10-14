@@ -28,7 +28,7 @@
 //---------------------------------------------------------------------------//
   void SerialSizer::IO(std::string & p_Value) 
   {
-    uint32_t dummy = p_Value.length();
+    uint32_t dummy = (uint32_t)p_Value.length();
     IO(dummy); 
     m_Length+=p_Value.length();
   }
@@ -78,7 +78,7 @@
 //---------------------------------------------------------------------------//
   void SerialSaver::IO(std::string& p_Value) 
   {
-    uint32_t lgth = p_Value.length();
+    uint32_t lgth = (uint32_t)p_Value.length();
     IO(lgth);
     if (lgth > 0)
         m_streamer->Write(p_Value.c_str(), lgth);

@@ -69,10 +69,10 @@ class Renderer
              FirstWidget, LastWidget = (FirstWidget + WIDGET_NUM -1 ),
              Discarded};
 
-        virtual size_t WidgetWidth(WidgetId) const = 0;
-        virtual size_t WidgetHeight(WidgetId) const = 0;
-        size_t ScreenWidth() const { return screen_size_.X(); }
-        size_t ScreenHeight() const { return screen_size_.Y(); }
+        virtual int WidgetWidth(WidgetId) const = 0;
+        virtual int WidgetHeight(WidgetId) const = 0;
+        int ScreenWidth() const { return screen_size_.X(); }
+        int ScreenHeight() const { return screen_size_.Y(); }
 
         const Point &CardSize() const { return card_size_; }
         const Point &Spacing() const { return spacing_; }
