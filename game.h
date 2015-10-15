@@ -120,7 +120,6 @@ protected:
     void Save();
 
 // names on the filesystem
-    static std::string DirName();
     static std::string GameName();
     static std::string ScoreName();
 

@@ -239,7 +239,7 @@ startup()
 
 std::string Game::
 ScoreName() {
-    std::string filename = DirName();
+    std::string filename = GameName();
 
     filename += ".scores";
 
@@ -247,36 +247,9 @@ ScoreName() {
 }
 
 std::string Game::
-DirName() {
-#ifdef XIPHONE
-    std::string path = SDL_GetBasePath();
-    return path + "/../Documents/";
-#elif defined(WIN32)
-    return "./";
-#else
-    if (const char *d = SDL_getenv("HOME")) {
-        std::string s = d;
-
-        s.append("/.solit");
-        ::mkdir(s.c_str(), 0755);
-
-        s.push_back('/');
-        return s;
-    }
-    else
-        return "./";
-#endif
-}
-
-std::string Game::
 GameName() {
     static const char *gamename[NUMBER_OF_GAMES] = { "klondike", "spider" };
-    std::string filename = DirName();
-
-    if (game_id_ >= 0 && game_id_ < NUMBER_OF_GAMES)
-        filename.append(gamename[game_id_]);
-    else
-        std::cerr << "Invalid game id!\n";
+    std::string filename = SDL_GetPrefPath("ggsoft", gamename[game_id_]);
 
     filename.append(SAVEGAME_NAME);
 
