@@ -150,7 +150,6 @@ ParseEvent(const SDL_Event &e)
             Renderer::MouseMove(Point(e.motion.x * ws_, e.motion.y * hs_));
             break;
         case SDL_MOUSEBUTTONDOWN:
-            std::cerr << "Click:" << (e.button.x * ws_) << ',' << (e.button.y *hs_)<< '\n';
             Renderer::PressButton(Point(e.button.x * ws_, e.button.y * hs_));
             break;                    
         case SDL_MOUSEBUTTONUP:
@@ -244,6 +243,7 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
         }
         else if (mode.h == 1024) {
             res_ = ressize[id][4];
+            found = true;
             break;
         }
         else if (mode.h == 480) {
@@ -266,19 +266,32 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
 
     screen_size_ = Point(res_.screen_width, res_.screen_height);
 
-    x_scaling_ = res_.xscaling;
-    y_scaling_ = res_.yscaling;
-
     std::cerr << "Res:" << screen_size_.X() << 'x' << screen_size_.Y() << '\n';
     if (!(screen_ = SDL_CreateWindow("Solit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                     screen_size_.X(), screen_size_.Y(), SDL_WINDOW_ALLOW_HIGHDPI)))
+                                     screen_size_.X(), screen_size_.Y(), found ? 0 : SDL_WINDOW_ALLOW_HIGHDPI)))
         throw std::string("Unable to open display.");
 
     SDL_GetWindowSize(screen_, &w_, &h_);
     std::cerr << "Window size set to: " << w_ << 'x' << h_ << '\n';
-
+    
+    
     if (!(renderer_ = SDL_CreateRenderer(screen_, -1 /*selected*/, 0)))
         throw std::string("Unable to create renderer");
+    
+    int w, h;
+    SDL_GetRendererOutputSize(renderer_, &w, &h);
+    
+    for (size_t i = 0; i < sizeof(ressize[0])/sizeof(ressize[0][0]); ++i) {
+        if (ressize[id][i].screen_width == w &&
+            ressize[id][i].screen_height == h) {
+            res_ = ressize[id][i];
+            break;
+        }
+    }
+    x_scaling_ = res_.xscaling;
+    y_scaling_ = res_.yscaling;
+    screen_size_ = Point(res_.screen_width, res_.screen_height);
+
     
 	if (!(widgets_[QUIT_GAME] = load_image("close") )) 
         throw std::string("Unable to load close image");
@@ -291,8 +304,6 @@ SdlRenderer(int id, int res, int cols, int seeds, bool card_slot) :
 
     card_rend_ = new SdlCardRenderer(".", *this);
 
-    int w, h;
-    SDL_GetRendererOutputSize(renderer_, &w, &h);
 
     ws_ = (float)w / (float)w_;
     hs_ = (float)h / (float)h_;

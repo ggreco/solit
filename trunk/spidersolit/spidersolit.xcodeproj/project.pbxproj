@@ -42,7 +42,6 @@
 		0B9EEA96161469DB00B9A10C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0B9EEA98161469DB00B9A10C /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		0B9EEA9C161469DB00B9A10C /* spidersolit-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "spidersolit-Info.plist"; sourceTree = "<group>"; };
-		0B9EEAA2161469DB00B9A10C /* spidersolit-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "spidersolit-Prefix.pch"; sourceTree = "<group>"; };
 		0B9EEAA6161469DB00B9A10C /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		0B9EEAA8161469DB00B9A10C /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		0B9EEAAA161469DB00B9A10C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
@@ -165,7 +164,6 @@
 				0BB57ABA1619F0B6005CA0F7 /* retina-icon.png */,
 				0BB57AB71619F063005CA0F7 /* icon.png */,
 				0B9EEA9C161469DB00B9A10C /* spidersolit-Info.plist */,
-				0B9EEAA2161469DB00B9A10C /* spidersolit-Prefix.pch */,
 				0B9EEAA6161469DB00B9A10C /* Default.png */,
 				0B9EEAA8161469DB00B9A10C /* Default@2x.png */,
 				0B9EEAAA161469DB00B9A10C /* Default-568h@2x.png */,
@@ -341,8 +339,9 @@
 		0B9EEAAF161469DB00B9A10C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Gabriele Greco";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Gabriele Greco (ZUS4PUGG37)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Gabriele Greco (ZUS4PUGG37)";
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "spidersolit/spidersolit-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = XIPHONE;
@@ -358,8 +357,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.ggsoft.Spider;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "D2C07706-097B-4FE7-B4B4-0DE460059110";
-				VALID_ARCHS = "";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "bd8b4c85-fab9-4360-ab59-37af76af398b";
+				VALID_ARCHS = "i386 x86_64 armv7 armv7s arm64";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -367,8 +367,9 @@
 		0B9EEAB0161469DB00B9A10C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Gabriele Greco";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Gabriele Greco (ZUS4PUGG37)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Gabriele Greco (ZUS4PUGG37)";
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "spidersolit/spidersolit-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = XIPHONE;
@@ -384,8 +385,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.ggsoft.Spider;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "D2C07706-097B-4FE7-B4B4-0DE460059110";
-				VALID_ARCHS = "";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "0f93d69d-2d3e-4824-95f0-595427c80339";
+				VALID_ARCHS = "i386 x86_64 armv7 armv7s arm64";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

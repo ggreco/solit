@@ -3,21 +3,31 @@
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
     "a317ef73-cb4e-4706-9428-a551bf037579++505" : {
 
+    },
+    "47a0e186-da48-0410-a149-f5e7934c5b89" : {
+
     }
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
     "a317ef73-cb4e-4706-9428-a551bf037579++505" : 0,
+    "47a0e186-da48-0410-a149-f5e7934c5b89" : 0,
     "FD4E9A6F588D13879065FBFB1A4565A2DB1B3914" : 0
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "5C5E4246-32D7-42C6-9B9F-CE08E8973C1B",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
     "a317ef73-cb4e-4706-9428-a551bf037579++505" : "solitgpl\/",
+    "47a0e186-da48-0410-a149-f5e7934c5b89" : "",
     "FD4E9A6F588D13879065FBFB1A4565A2DB1B3914" : "sdl-ios-framework\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "spidersolit",
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,
   "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "spidersolit\/spidersolit.xcodeproj",
   "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/oogtk.svn.sourceforge.net\/svnroot\/oogtk",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "47a0e186-da48-0410-a149-f5e7934c5b89"
+    },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/manifest\/sdl-ios-framework.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
